@@ -146,6 +146,11 @@ const string & AUTH_PURESTG2::GetStrError() const
     return errorStr;
 }
 //-----------------------------------------------------------------------------
+int AUTH_PURESTG2::Reload()
+{
+	return 0;
+}
+//-----------------------------------------------------------------------------
 int AUTH_PURESTG2::Start()
 {
     if (isRunning)

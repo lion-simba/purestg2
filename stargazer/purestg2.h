@@ -57,6 +57,7 @@ public:
 
     int                 Start();
     int                 Stop();
+    int					Reload();
     bool                IsRunning();
     void                SetSettings(const MODULE_SETTINGS & s);
     int                 ParseSettings();
