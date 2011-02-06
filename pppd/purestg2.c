@@ -1,6 +1,6 @@
 /*
- * purestg2.so - Stargazer authentication plugin for pppd (version 2.0)
- * Copyright (C) 2006-2009 Lion-Simba <lion-simba@lionking.ru>
+ * purestg2.so - Stargazer authentication plugin for pppd
+ * Copyright (C) 2006-2011 Alexey Osipov <lion-simba@pridelands.ru>
  *
  * Based on: 
  * passmysql.so - MySQL authentication plugin for pppd
