@@ -21,6 +21,8 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  */
+ 
+#include <config.h>
 
 #include <errno.h>
 #include <stdio.h>
@@ -28,7 +30,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <netinet/in.h>
+
+//pppd.h defines version of pppd
+#define PURESTG_VERSION VERSION
+#undef VERSION
 #include <pppd.h>
+
 #include <chap-new.h>
 #include <chap_ms.h>
 #include <md5.h>
@@ -315,5 +322,5 @@ void plugin_init (void)
     //start keepalive sequence
     timeout(&keep_alive, 0, keepalivetimeout, 0);    
                 
-    info("Purestg2 auth plugin initialized.");
+    info("Purestg2 (%s) auth plugin initialized.", PURESTG_VERSION);
 }

@@ -17,6 +17,8 @@
 /*
  *    Author: (c) 2009-2011 Alexey Osipov <lion-simba@pridelands.ru>
  */
+
+#include <config.h>
  
 #include <stdio.h>
 #include <stdlib.h>

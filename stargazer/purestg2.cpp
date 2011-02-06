@@ -17,6 +17,8 @@
 /*
  *    Author: (c) 2009-2011 Alexey Osipov <lion-simba@pridelands.ru>
  */
+ 
+#include <config.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -30,6 +32,8 @@
 #include "purestg2.h"
 #include "pureproto.h"
 
+#define PURESTGNAME(package) \
+	 "PPPD Authorizator (##package##)"
 
 class PURESTG2_CREATOR
 {
@@ -69,7 +73,7 @@ BASE_PLUGIN * GetPlugin()
 //-----------------------------------------------------------------------------
 const string AUTH_PURESTG2::GetVersion() const
 {
-    return "Linux PPPD (purestg2) authorizator v.0.1";
+    return PURESTGNAME(PACKAGE_STRING);
 }
 //-----------------------------------------------------------------------------
 AUTH_PURESTG2::AUTH_PURESTG2()
