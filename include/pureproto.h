@@ -4,7 +4,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#include "stg_common.h"
+#include <stg_common.h>
 
 // ask types
 

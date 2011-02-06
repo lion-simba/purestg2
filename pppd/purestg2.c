@@ -28,12 +28,12 @@
 #include <string.h>
 #include <unistd.h>
 #include <netinet/in.h>
-#include "pppd.h"
-#include "chap-new.h"
-#include "chap_ms.h"
-#include "md5.h"
+#include <pppd.h>
+#include <chap-new.h>
+#include <chap_ms.h>
+#include <md5.h>
+#include <stg_common.h>
 
-#include "stg_common.h"
 #include "pureclient.h"
 
 char pppd_version[] = VERSION;

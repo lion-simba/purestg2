@@ -29,11 +29,11 @@
 #include <map>
 #include <pthread.h>
 #include <sys/poll.h>
-#include "base_auth.h"
+#include <base_auth.h>
 //#include "notifer.h"
 //#include "user_ips.h"
-#include "stg_logger.h"
-#include "../../../users.h"
+#include <stg_logger.h>
+#include <users.h>
 
 #define MAXPURECONNECTIONS 400
 
