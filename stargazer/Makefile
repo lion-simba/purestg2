@@ -1,26 +1,32 @@
-###############################################################################
-# $Id: Makefile,v 1.9 2007/09/26 14:06:06 faust Exp $
-###############################################################################
+#***********************************************************************
+#
+# Makefile for PureSTG authentication stargazer plugin
+#
+# Copyright (C) 2010-2011 Alexey Osipov <lion-simba@pridelands.ru>
+#
+# This program may be distributed according to the terms of the GNU
+# General Public License, version 2 or (at your option) any later version.
+#
+#***********************************************************************
 
-include ../../../../../Makefile.conf
+PLUGINSDIR = /usr/lib/stg
+STGINCS=/usr/include/stargazer
+CFLAGS  = -O2 -I$(STGINCS) -I../include -fPIC -DRELEASE -DLINUX
+PLUGINNAME = mod_auth_purestg2.so
 
-LIBS = -lstg_common
+all: $(PLUGINNAME)
 
-ifeq ($(OS),linux)
-LIBS += -lpthread
-endif
+purestg2.o: purestg2.cpp purestg2.h
+	$(CC) -c -o purestg2.o $(CFLAGS) purestg2.cpp
 
-ifeq ($(OS),bsd)
-LIBS += -lc_r
-endif
+$(PLUGINNAME): purestg2.o
+	$(CC) -o $(PLUGINNAME) -shared $(CFLAGS) $^
 
-ifeq ($(OS),bsd5)
-LIBS += -lc_r
-endif
+install: all
+	install -c -s -m 644 $(PLUGINNAME) $(PLUGINSDIR)/$(PLUGINNAME)
 
-PROG = mod_auth_purestg2.so
+uninstall:
+	rm -f $(PLUGINSDIR)/$(PLUGINNAME)
 
-SRCS = ./purestg2.cpp
-
-include ../../Makefile.in
-
+clean:
+	rm -f *.o *.so
