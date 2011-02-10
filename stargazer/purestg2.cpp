@@ -32,8 +32,7 @@
 #include "purestg2.h"
 #include "pureproto.h"
 
-#define PURESTGNAME(package) \
-	 "PPPD Authorizator (##package##)"
+#define PURESTGNAME(_package)	 "PPPD Authorizator (" _package ")"
 
 class PURESTG2_CREATOR
 {
