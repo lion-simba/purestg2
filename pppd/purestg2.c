@@ -47,11 +47,11 @@ char pppd_version[] = VERSION;
 
 /* parameters */
 
-static int keepalivetimeout;
+static int keepalivetimeout = 60;
 static char authsocketpath[255];
 
 static option_t options[] = {
-    { "keepalivetimeout", o_int, &keepalivetimeout, "timeout of waiting for stargazer ALIVE packets (seconds)", 60},
+    { "keepalivetimeout", o_int, &keepalivetimeout, "timeout of waiting for stargazer ALIVE packets (seconds)", OPT_LLIMIT, NULL, 0, 10},
     { "authsocket", o_string, authsocketpath, "Stargazer auth socket path", 
       OPT_PRIV | OPT_STATIC, NULL, 254 },
     {  NULL }
