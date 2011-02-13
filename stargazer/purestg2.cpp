@@ -510,6 +510,14 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
             break;
         }
 
+        //check if already connected
+        if (user->GetAuthorized())
+        {
+            WriteServLog("purestg2: User %s (socket=%d) is already connected.", ask.login, clientsocket);
+            reply.result = PUREPROTO_REPLY_ERROR;
+            break;
+        }
+
         //get user passwd
         strncpy(reply.passwd, user->property.password.Get().c_str(), PASSWD_LEN);
 
