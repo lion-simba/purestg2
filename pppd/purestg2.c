@@ -32,7 +32,6 @@
 #include <netinet/in.h>
 
 //pppd.h defines version of pppd
-#define PURESTG_VERSION VERSION
 #undef VERSION
 #include <pppd.h>
 
@@ -322,5 +321,5 @@ void plugin_init (void)
     //start keepalive sequence
     timeout(&keep_alive, 0, keepalivetimeout, 0);    
                 
-    info("Purestg2 (%s) auth plugin initialized.", PURESTG_VERSION);
+    info("Stargazer (%s) auth plugin initialized.", PACKAGE_STRING);
 }
