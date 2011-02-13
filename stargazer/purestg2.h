@@ -35,8 +35,6 @@
 #include <stg_logger.h>
 #include <users.h>
 
-#define MAXPURECONNECTIONS 400
-
 using namespace std;
 
 extern "C" BASE_PLUGIN * GetPlugin();
@@ -46,7 +44,7 @@ class AUTH_PURESTG2 :public BASE_AUTH
 {
 public:
     AUTH_PURESTG2();
-    virtual ~AUTH_PURESTG2(){};
+    virtual ~AUTH_PURESTG2();
 
     void                SetUsers(USERS * u);
     void                SetTariffs(TARIFFS * t){};
@@ -57,7 +55,7 @@ public:
 
     int                 Start();
     int                 Stop();
-    int					Reload();
+    int                 Reload();
     bool                IsRunning();
     void                SetSettings(const MODULE_SETTINGS & s);
     int                 ParseSettings();
@@ -71,10 +69,10 @@ public:
 private:
     static void*        Run(void * me);
     
-    STG_LOGGER&		WriteServLog;
+    STG_LOGGER&         WriteServLog;
     
-    int			addConnection(int socket);
-    int			delConnection(int socket);
+    int                 addConnection(int socket);
+    int                 delConnection(int socket);
     
     int                 acceptClientConnection();
     int                 handleClientConnection(int clientsocket);
@@ -83,20 +81,21 @@ private:
     
 private:
     mutable string      errorStr;
-    bool                isRunning;	//running or not in fact
-    bool		nonstop;	//must run or mustn't
-    string		authsocketpath;
-    int			listeningsocket;
-    pthread_t		listeningthread;
+    bool                isRunning;          //running or not in fact
+    bool                nonstop;            //must run or mustn't
+    string              authsocketpath;
+    int                 listeningsocket;
+    pthread_t           listeningthread;
     
-    struct pollfd	connections[MAXPURECONNECTIONS]; //connections[0] is for listeningsocket
-    int			connections_count;
+    struct pollfd*      connections;        //connections[0] is for listeningsocket
+    int                 connections_count;  //valid elements count in "connections"
+    int                 connections_size;   //capacity of "connections"
     
-    int			minppp;    
+    int                 minppp;    
     int                 d;
     
     MODULE_SETTINGS     settings;
-    USERS             * users;
+    USERS*              users;
     
 };
 //-----------------------------------------------------------------------------
