@@ -2,7 +2,7 @@
  * purestg2.so - Stargazer authentication plugin for pppd
  * Copyright (C) 2006-2011 Alexey Osipov <lion-simba@pridelands.ru>
  *
- * Based on: 
+ * Based on:
  * passmysql.so - MySQL authentication plugin for pppd
  * Copyright (C) 2004, 2003 McMCC <mcmcc@mail.ru>
  *
@@ -21,7 +21,7 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *
  */
- 
+
 #include <config.h>
 
 #include <errno.h>
@@ -51,7 +51,7 @@ static char authsocketpath[255];
 
 static option_t options[] = {
     { "keepalivetimeout", o_int, &keepalivetimeout, "timeout of waiting for stargazer ALIVE packets (seconds)", OPT_LLIMIT, NULL, 0, 10},
-    { "authsocket", o_string, authsocketpath, "Stargazer auth socket path", 
+    { "authsocket", o_string, authsocketpath, "Stargazer auth socket path",
       OPT_PRIV | OPT_STATIC, NULL, 254 },
     {  NULL }
 };
@@ -69,8 +69,8 @@ void user_on(void* opaque, int xz)
     //ask stargazer to enable this user
     if (pureproto_connectuser(userlogin) == -1)
     {
-	error("purestg2: Can't connect user %s.", userlogin);
-	return;
+        error("purestg2: Can't connect user %s.", userlogin);
+        return;
     }
 
     info("purestg2: User %s connected.", userlogin);
@@ -81,18 +81,18 @@ void user_off(void* opaque, int xz)
     //if user, then ask stargazer to disable this user
     if (pureproto_disconnectuser(userlogin) == -1)
     {
-	error("purestg2: Can't disconnect user %s", userlogin);
-	return;
+        error("purestg2: Can't disconnect user %s", userlogin);
+        return;
     }
-    
+
     info("purestg2: User %s disconnected.", userlogin);
-        
+
     if (pureproto_disconnect() == -1)
     {
-	error("purestg2: Can't disconnect from stargazer.");
-	return;
+        error("purestg2: Can't disconnect from stargazer.");
+        return;
     }
-    
+
     info("purestg2: Disconnected from stargazer.");
 }
 
@@ -101,82 +101,82 @@ void user_off(void* opaque, int xz)
 #define NEW_CHAP_SUCCESS 1
 
 int chap_stg_verify(char *user, char *ourname, int id,
-                   struct chap_digest_type *digest,
-                   unsigned char *challenge, unsigned char *response,
-                   char *message, int message_space)
+                    struct chap_digest_type *digest,
+                    unsigned char *challenge, unsigned char *response,
+                    char *message, int message_space)
 {
- info("purestg2: CHAP started.");
- 
- int code = NEW_CHAP_FAILURE;
- char secret[PASSWD_LEN+1];
- 
- if (strlen(user) > LOGIN_LEN)
- {
-    error("purestg2: Login length of login \"%s\" is too big.", user);
-    return code;
- }
-   
- //ask stg if user can be turned on
- //if ok, ask user's password
- if (pureproto_getpasswd(secret, user) == -1)
- {
-    error("purestg2: Can't get passwd for user %s.", user);
-    return code;
- }
- 
- info("purestg2: Got passwd for user %s.", user);
- 
- strncpy(userlogin, user, LOGIN_LEN);
+    info("purestg2: CHAP started.");
 
- //verify password 
- code = digest->verify_response(id, user, secret, strlen(secret), challenge,
-				     response, message, message_space);
+    int code = NEW_CHAP_FAILURE;
+    char secret[PASSWD_LEN+1];
 
- //check code 
- if(code != NEW_CHAP_SUCCESS)
- {
-    error("purestg2: CHAP failed.");
-    //slprintf(message, message_space, "Access denied"); // write our cause (we still need this?)
- }
- 
- return code;
+    if (strlen(user) > LOGIN_LEN)
+    {
+        error("purestg2: Login length of login \"%s\" is too big.", user);
+        return code;
+    }
+
+    //ask stg if user can be turned on
+    //if ok, ask user's password
+    if (pureproto_getpasswd(secret, user) == -1)
+    {
+        error("purestg2: Can't get passwd for user %s.", user);
+        return code;
+    }
+
+    info("purestg2: Got passwd for user %s.", user);
+
+    strncpy(userlogin, user, LOGIN_LEN);
+
+    //verify password
+    code = digest->verify_response(id, user, secret, strlen(secret), challenge,
+                                   response, message, message_space);
+
+    //check code
+    if (code != NEW_CHAP_SUCCESS)
+    {
+        error("purestg2: CHAP failed.");
+        //slprintf(message, message_space, "Access denied"); // write our cause (we still need this?)
+    }
+
+    return code;
 }
 
 
 int pap_stg_verify(char *user,
-            		char *passwd,
-			char **msgp,
-			struct wordlist **paddrs,
-			struct wordlist **popts)
+                   char *passwd,
+                   char **msgp,
+                   struct wordlist **paddrs,
+                   struct wordlist **popts)
 {
 
     info("purestg2: PAP started.");
 
     char secret[PASSWD_LEN+1];
- 
+
     if (strlen(user) > LOGIN_LEN)
     {
-	error("purestg2: Login length of login \"%s\" is too big.", user);
-	return 0;
+        error("purestg2: Login length of login \"%s\" is too big.", user);
+        return 0;
     }
-   
+
     //ask stg if user can be turned on
     //if ok, ask user's password
     if (pureproto_getpasswd(secret, user) == -1)
     {
-	error("purestg2: Can't get passwd for user %s.", user);
-	return 0;
+        error("purestg2: Can't get passwd for user %s.", user);
+        return 0;
     }
-    
+
     info("purestg2: Got passwd for user %s.", user);
- 
+
     strncpy(userlogin, user, LOGIN_LEN);
 
     //compare passed password with correct one
-    if(strncmp(secret, passwd, PASSWD_LEN) != 0)
+    if (strncmp(secret, passwd, PASSWD_LEN) != 0)
     {
-	error("purestg2: PAP failed.");
-	return 0;
+        error("purestg2: PAP failed.");
+        return 0;
     }
 
     return 1;
@@ -186,16 +186,16 @@ int pap_stg_verify(char *user,
 void choose_ip(u_int32_t *addrp)
 {
     struct in_addr inpz;
-	
+
     info("purestg2: IP choose started.");
 
     //ask IP for user from stargazer
     if (pureproto_getip(&inpz, userlogin) == -1)
     {
-	error("purestg2: Can't get IP for user %s.", userlogin);
-	return;
+        error("purestg2: Can't get IP for user %s.", userlogin);
+        return;
     }
-    
+
     //set that ip to addrp
     *addrp = inpz.s_addr;
 }
@@ -216,24 +216,24 @@ int allowed_address (u_int32_t addr)
 {
     struct in_addr inpz;
     info("purestg2: Allowed address.");
-    
+
     //ask user's IP from stargazer
     if (pureproto_getip(&inpz, userlogin) == -1)
     {
-	error("purestg2: Can't get IP for user %s.", userlogin);
-	return;
+        error("purestg2: Can't get IP for user %s.", userlogin);
+        return;
     }
-    
+
     //validate that IP with addr
     if (addr == inpz.s_addr)
     {
-	info("purestg2: Good address.");
-	return 1;
+        info("purestg2: Good address.");
+        return 1;
     }
     else
     {
-	inpz.s_addr = addr;	
-	error("purestg2: Bad address: %s", inet_ntoa(inpz));
+        inpz.s_addr = addr;
+        error("purestg2: Bad address: %s", inet_ntoa(inpz));
         return 0;
     }
 }
@@ -242,25 +242,25 @@ void keep_alive(void* opaque)
 {
     int result;
     dbglog("purestg2: keepalive started.");
-    
+
     result = pureproto_ping(keepalivetimeout, userlogin);
     if (result < 0)
     {
-	if (result == -2)
-	{
-	    error("purestg2: Error reply on ping command, disconnect and exiting.");
-	    pureproto_disconnectuser(userlogin);
-	    pureproto_disconnect();
-	}
-	else	
-	    error("purestg2: No ping from stargazer, exiting.");
-	    
-	die(1);
-	return;
+        if (result == -2)
+        {
+            error("purestg2: Error reply on ping command, disconnect and exiting.");
+            pureproto_disconnectuser(userlogin);
+            pureproto_disconnect();
+        }
+        else
+            error("purestg2: No ping from stargazer, exiting.");
+
+        die(1);
+        return;
     }
-    
+
     dbglog("purestg2: keepalive succedded.");
-    
+
     timeout(&keep_alive, 0, keepalivetimeout, 0);
 }
 
@@ -268,44 +268,44 @@ int stg_phase(int phase)
 {
     if (phase == PHASE_SERIALCONN)
     {
-	if (pureproto_connect(authsocketpath) == -1)
+        if (pureproto_connect(authsocketpath) == -1)
         {
-	    error("purestg2: Can't connect to stargazer's socket %s. Exiting.", authsocketpath);
-	    die(1);
-	}
-    
+            error("purestg2: Can't connect to stargazer's socket %s. Exiting.", authsocketpath);
+            die(1);
+        }
+
         info("purestg2: Connected to stargazer via %s.", authsocketpath);
 
-	if (ipparam && ipparam[0] != '\0')
-	{
-	    if (pureproto_sethostip(ipparam) == -1)
-		error("purestg2: Can't set host ip.");
-	}
-	else
-	{
-	    info("purestg2: No ipparam exist, set 0.0.0.0 as user host ip.");
-	    if (pureproto_sethostip("0.0.0.0") == -1)
-		error("purestg2: Can't set host ip.");
-	}    
-    
-	if (pureproto_getifunit(&req_unit) == -1)
-	{
-	    error("purestg2: Can't get ifunit. Exiting.");
-	    die(1);
-	}
-    
-	info("purestg2: ifunit set to %d.", req_unit);
+        if (ipparam && ipparam[0] != '\0')
+        {
+            if (pureproto_sethostip(ipparam) == -1)
+                error("purestg2: Can't set host ip.");
+        }
+        else
+        {
+            info("purestg2: No ipparam exist, set 0.0.0.0 as user host ip.");
+            if (pureproto_sethostip("0.0.0.0") == -1)
+                error("purestg2: Can't set host ip.");
+        }
+
+        if (pureproto_getifunit(&req_unit) == -1)
+        {
+            error("purestg2: Can't get ifunit. Exiting.");
+            die(1);
+        }
+
+        info("purestg2: ifunit set to %d.", req_unit);
     }
 }
 
 void plugin_init (void)
 {
     add_options(options);
-    
+
     userlogin[0] = '\0';
-    
+
     new_phase_hook = stg_phase;
-    
+
     pap_check_hook = pap_check_ok;
     chap_check_hook = chap_check_ok;
 
@@ -314,12 +314,12 @@ void plugin_init (void)
 
     ip_choose_hook = choose_ip;
     allowed_address_hook = allowed_address;
-    
+
     add_notifier(&auth_up_notifier, user_on, 0);
     add_notifier(&link_down_notifier, user_off, 0);
-    
+
     //start keepalive sequence
-    timeout(&keep_alive, 0, keepalivetimeout, 0);    
-                
+    timeout(&keep_alive, 0, keepalivetimeout, 0);
+
     info("Stargazer (%s) auth plugin initialized.", PACKAGE_STRING);
 }
