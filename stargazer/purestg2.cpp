@@ -79,16 +79,23 @@ AUTH_PURESTG2::AUTH_PURESTG2()
         :WriteServLog(GetStgLogger())
 {
     isRunning = false;
+    
     connections_size = 1;
     connections = (struct pollfd*)malloc(connections_size * sizeof(struct pollfd));
     connections_count = 0;
+    
     minppp = 10;
+    busyunits_size = 1;
+    busyunits = (int*)malloc(busyunits_size * sizeof(int));
+    busyunits[0] = -1;
+    
     d = 0;
 }
 //-----------------------------------------------------------------------------
 AUTH_PURESTG2::~AUTH_PURESTG2()
 {
     free(connections);
+    free(busyunits);
 }
 //-----------------------------------------------------------------------------
 void AUTH_PURESTG2::SetUsers(USERS * u)
@@ -306,7 +313,7 @@ void* AUTH_PURESTG2::Run(void * me)
                 auth->WriteServLog("purestg2: BUG: Our listening socket is running away!");
             else
             {
-                if (auth->delConnection(hupsockets[i]) == -1)
+                if (auth->delConnection(hupsockets[i]) < 0)
                     auth->WriteServLog("purestg2: BUG: Can't del hupped connection!");
 
                 close(hupsockets[i]);
@@ -362,6 +369,7 @@ int AUTH_PURESTG2::addConnection(int socket)
 //-----------------------------------------------------------------------------
 int AUTH_PURESTG2::delConnection(int socket)
 {
+    //remove connection
     int i;
     for (i = 0; i < connections_count; i++)
     {
@@ -378,6 +386,18 @@ int AUTH_PURESTG2::delConnection(int socket)
         connections[i].fd = connections[lastindex].fd;
 
     connections_count--;
+    
+    //free unit holded by this socket
+    for(i = 0; i < busyunits_size; i++)
+    {
+        if (busyunits[i] == socket)
+            break;
+    }
+    
+    if (i == busyunits_size)
+        return -2;
+        
+    busyunits[i] = -1;
 
     return 0;
 }
@@ -539,7 +559,29 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
         break;
 
     case PUREPROTO_ASK_IFUNIT:
-        reply.ifunit = getNextIfunit();
+        reply.ifunit = -1;
+        for(int i = 0; i < busyunits_size; i++)
+        {
+            if (busyunits[i] == -1)
+            {
+                reply.ifunit = i + minppp;
+                busyunits[i] = clientsocket;
+                break;
+            }
+        }
+        if (reply.ifunit == -1)
+        {            
+            int i = busyunits_size;
+            
+            busyunits_size *= 2;
+            busyunits = (int*)realloc(busyunits, busyunits_size * sizeof(int));
+            
+            reply.ifunit = i + minppp;
+            busyunits[i] = clientsocket;
+            
+            for(i++; i < busyunits_size; i++)
+                busyunits[i] = -1;
+        }
 
         reply.result = PUREPROTO_REPLY_OK;
         break;
@@ -573,19 +615,5 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
     }
 
     return 0;
-}
-//-----------------------------------------------------------------------------
-int AUTH_PURESTG2::getNextIfunit()
-{
-    char lf[100];
-
-    int ifnum = minppp;
-    do
-    {
-        ++ifnum;
-        sprintf(lf, "/var/run/ppp%d.pid", ifnum);
-    } while (access(lf, F_OK) == 0);
-
-    return ifnum;
 }
 //-----------------------------------------------------------------------------

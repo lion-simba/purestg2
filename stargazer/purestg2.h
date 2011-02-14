@@ -77,8 +77,6 @@ private:
     int                 acceptClientConnection();
     int                 handleClientConnection(int clientsocket);
     
-    int                 getNextIfunit();
-    
 private:
     mutable string      errorStr;
     bool                isRunning;          //running or not in fact
@@ -91,7 +89,10 @@ private:
     int                 connections_count;  //valid elements count in "connections"
     int                 connections_size;   //capacity of "connections"
     
-    int                 minppp;    
+    int*                busyunits;          //busyunits[unitnum-minppp] = socket_id which holds unitnum or -1 if unitnum is free
+    int                 busyunits_size;
+    int                 minppp;
+    
     int                 d;
     
     MODULE_SETTINGS     settings;
