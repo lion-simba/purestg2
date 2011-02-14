@@ -1,3 +1,14 @@
+commit 5b615f1
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-15
+
+    1. Fixed install out of build directory.
+    2. Changelog updated.
+
+ChangeLog
+configure
+configure.ac
+
 commit 6c6c409
 Author: Alexey Osipov <lion-simba@pridelands.ru>
 Date:   2011-02-15
