@@ -30,8 +30,10 @@ access, it's password is copied back to pppd and used to do
 authentication of user. Both PAP and CHAP (including MS-CHAP-v2)
 methods are supported.
 
-3. If authentication was successfull, ask Stargazer to connect
-user.
+3. If authentication was successfull:
+3.1 Ask Stargazer for user's IP address and set it as remote
+address of PPP connection.
+3.2 Ask Stargazer to connect user.
 
 4. Send a PING packet to Stargazer each N seconds (configurable,
 60 by default) to check if Stargazer is still alive AND user is
