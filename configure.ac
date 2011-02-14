@@ -3,7 +3,7 @@
 
 AC_PREREQ([2.65])
 AC_INIT([purestg2], [2.0], [lion-simba@pridelands.ru])
-AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+AM_INIT_AUTOMAKE([-Wall -Werror gnu])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([include/pureproto.h])
 AC_CONFIG_HEADERS([config.h])

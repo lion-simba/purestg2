@@ -1,0 +1,92 @@
+purestg2 - Stargazer authentication module for linux PPP daemon.
+
+
+==== OVERVIEW ====
+purestg2 comes as two plugins - one for Stargazer billing system
+and one for PPP daemon (pppd).
+
+The Stargazer part (mod_auth_purestg2.so) opens a UNIX domain
+socket at specified address and listens for incoming connections
+from pppd part.
+
+When pppd configured for using purestg2 plugin (purestg2.so)
+started, it connects to the specified UNIX domain socket and
+do the following:
+
+1. Ask Stargazer to lease a PPP unit number, which will be
+assigned to the PPP interface (like ppp<number>).
+
+NOTE:
+Stargazer lease the first free PPP unit number starting from
+specified minimum number. Unit number counted as free if it was 
+NOT leased by Stargazer yet. Stargazer can't detect units spawned
+by other processes.
+
+2. After got the user's login, pass it to Stargazer and ask it
+if the user is allowed to get access. If user allowed to get an
+access, it's password is copied back to pppd and used to do
+authentication of user. Both PAP and CHAP (including MS-CHAP-v2)
+methods are supported.
+
+3. If authentication was successfull, ask Stargazer to connect
+user.
+
+4. Send a PING packet to Stargazer each N seconds (configurable,
+60 by default) to check if Stargazer is still alive AND user is
+still allowed to access. If Stargazer will not respond in N seconds,
+pppd will die and connection will be terminated. If Stargazer
+responds with "User is no more allowed to access" the pppd will die
+and connection will be terminated.
+
+NOTE:
+Because of N seconds timeout, the actual connection termination
+by the will of Stargazer will be done in time interval from 0 to
+N seconds.
+
+When user disconnects, pppd plugin ask Stargazer to disconnect
+the user and then die.
+
+
+==== INSTALLATION ====
+See the INSTALL file and consider following:
+
+Stargazer and pppd header files are required to compile. The
+default location of pppd headers is /usr/include/pppd. You
+can change this by passing --with-pppd-headers=<path> option
+to configure script. The default location of Stargazer headers
+is /usr/include/stargazer. You can change this by passing
+--with-stg-headers=<path> option to configure script.
+
+The Stargazer plugin must be placed in Stargazer's plugin (lib)
+directory (/usr/lib/stg/ by default). You can change this by
+passing --with-stg-libdir=<path> option to configure script.
+
+The pppd plugin must be placed in pppd's plugin directory
+(/usr/lib/pppd/<pppd version>/ by default). You can change this
+by passing --with-pppd-libdir=<path> option to configure script.
+Note that <pppd version> part will be appended automatically.
+
+
+==== CONFIGURATION ====
+Here is an example chunk of Stargazer configuration file for
+using this plugin:
+-----|<--------------------------------------
+    <Module auth_purestg2>
+        authsocket = /var/run/purestg2.sock
+        minppp = 5
+    </Module>
+------------>|-------------------------------
+authsocket is UNIX domain socket address.
+minppp is the minimum PPP unit number for Stargazer PPP
+clients.
+
+Here is an example chunk of pppd options file for using 
+this plugin:
+-----|<--------------------------------------
+    plugin purestg2.so
+    authsocket /var/run/purestg2.sock
+    keepalivetimeout 30
+------------>|-------------------------------
+authsocket is UNIX domain socket address.
+keepalivetimeout is the time between two sequential PING
+packets from pppd plugin to Stargazer (see above).
