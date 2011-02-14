@@ -14804,7 +14804,7 @@ fi
 if test "${with_pppd_libdir+set}" = set; then :
   withval=$with_pppd_libdir; pppmoduledir=$withval/$(awk -F '"' '/VERSION/ { print $$2; }' $PPPINCS/patchlevel.h)
 else
-  pppmoduledir=/usr/lib/pppd/$(awk -F '"' '/VERSION/ { print $$2; }' $PPPINCS/patchlevel.h)
+  pppmoduledir=\${prefix}/usr/lib/pppd/$(awk -F '"' '/VERSION/ { print $$2; }' $PPPINCS/patchlevel.h)
 fi
 
 
@@ -14812,9 +14812,9 @@ fi
 
 # Check whether --with-stg-libdir was given.
 if test "${with_stg_libdir+set}" = set; then :
-  withval=$with_stg_libdir; stgmoduledir="$withval"
+  withval=$with_stg_libdir; stgmoduledir=$withval
 else
-  stgmoduledir="/usr/lib/stg"
+  stgmoduledir=\${prefix}/usr/lib/stg
 fi
 
 
