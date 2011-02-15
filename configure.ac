@@ -75,14 +75,14 @@ AC_ARG_WITH([pppd-libdir],
     [AC_HELP_STRING([--with-pppd-libdir],
         [where to install pppd plugin, defaults to /usr/lib/pppd])],
     [pppmoduledir=$withval/$(awk -F '"' '/VERSION/ { print $$2; }' $PPPINCS/patchlevel.h)],
-    [pppmoduledir=\${prefix}/usr/lib/pppd/$(awk -F '"' '/VERSION/ { print $$2; }' $PPPINCS/patchlevel.h)])
+    [pppmoduledir=\${libdir}/pppd/$(awk -F '"' '/VERSION/ { print $$2; }' $PPPINCS/patchlevel.h)])
 AC_SUBST([pppmoduledir])
 
 AC_ARG_WITH([stg-libdir],
     [AC_HELP_STRING([--with-stg-libdir],
         [where to install stargazer plugin, defaults to /usr/lib/stg])],
     [stgmoduledir=$withval],
-    [stgmoduledir=\${prefix}/usr/lib/stg])
+    [stgmoduledir=\${libdir}/stg])
 AC_SUBST([stgmoduledir])
 
 # Checks for typedefs, structures, and compiler characteristics.
