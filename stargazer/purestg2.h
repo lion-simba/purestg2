@@ -27,6 +27,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 #include <pthread.h>
 #include <sys/poll.h>
 #include <base_auth.h>
@@ -78,25 +79,22 @@ private:
     int                 handleClientConnection(int clientsocket);
     
 private:
-    mutable string      errorStr;
-    bool                isRunning;          //running or not in fact
-    bool                nonstop;            //must run or mustn't
-    string              authsocketpath;
-    int                 listeningsocket;
-    pthread_t           listeningthread;
+    mutable string          errorStr;
+    bool                    isRunning;          //running or not in fact
+    bool                    nonstop;            //must run or mustn't
+    string                  authsocketpath;
+    int                     listeningsocket;
+    pthread_t               listeningthread;
     
-    struct pollfd*      connections;        //connections[0] is for listeningsocket
-    int                 connections_count;  //valid elements count in "connections"
-    int                 connections_size;   //capacity of "connections"
+    vector<struct pollfd>   connections;        //connections[0] is for listeningsocket
     
-    int*                busyunits;          //busyunits[unitnum-minppp] = socket_id which holds unitnum or -1 if unitnum is free
-    int                 busyunits_size;
-    int                 minppp;
+    vector<int>             busyunits;          //busyunits[unitnum-minppp] = socket_id which holds unitnum or -1 if unitnum is free
+    int                     minppp;
     
-    int                 d;
+    int                     d;
     
-    MODULE_SETTINGS     settings;
-    USERS*              users;
+    MODULE_SETTINGS         settings;
+    USERS*                  users;
     
 };
 //-----------------------------------------------------------------------------

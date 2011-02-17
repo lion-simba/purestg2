@@ -79,23 +79,13 @@ AUTH_PURESTG2::AUTH_PURESTG2()
         :WriteServLog(GetStgLogger())
 {
     isRunning = false;
-    
-    connections_size = 1;
-    connections = (struct pollfd*)malloc(connections_size * sizeof(struct pollfd));
-    connections_count = 0;
-    
     minppp = 10;
-    busyunits_size = 1;
-    busyunits = (int*)malloc(busyunits_size * sizeof(int));
-    busyunits[0] = -1;
-    
     d = 0;
 }
 //-----------------------------------------------------------------------------
 AUTH_PURESTG2::~AUTH_PURESTG2()
 {
-    free(connections);
-    free(busyunits);
+
 }
 //-----------------------------------------------------------------------------
 void AUTH_PURESTG2::SetUsers(USERS * u)
@@ -244,17 +234,12 @@ void* AUTH_PURESTG2::Run(void * me)
 
     auth->isRunning = true;
 
-    int changedsockets_size = 1;
-    int* changedsockets = (int*)malloc(changedsockets_size * sizeof(int));
-    int changedsockets_count = 0;
-
-    int hupsockets_size = 1;
-    int* hupsockets = (int*)malloc(hupsockets_size * sizeof(int));
-    int hupsockets_count = 0;
+    vector<int> changedsockets;
+    vector<int> hupsockets;
 
     while (auth->nonstop)
     {
-        int pollresult = poll(auth->connections, auth->connections_count, 1000);
+        int pollresult = poll(&auth->connections.front(), auth->connections.size(), 1000);
 
         if (pollresult == -1)
         {
@@ -265,64 +250,45 @@ void* AUTH_PURESTG2::Run(void * me)
 
         if (pollresult == 0)
             continue;
+            
+        changedsockets.clear();
+        hupsockets.clear();
 
-        changedsockets_count = 0;
-        hupsockets_count = 0;
-
-        for (int i = 0; i < auth->connections_count; i++)
+        for (vector<struct pollfd>::iterator connection = auth->connections.begin(); connection != auth->connections.end(); ++connection)
         {
-            if (auth->connections[i].revents & POLLHUP)
-            {
-                hupsockets_count++;
-                if (hupsockets_count > hupsockets_size)
-                {
-                    hupsockets_size *= 2;
-                    hupsockets = (int*)realloc(hupsockets, hupsockets_size * sizeof(int));
-                }
-                hupsockets[hupsockets_count-1] = auth->connections[i].fd;
-            }
-            else if (auth->connections[i].revents & POLLIN)
-            {
-                changedsockets_count++;
-                if (changedsockets_count > changedsockets_size)
-                {
-                    changedsockets_size *= 2;
-                    changedsockets = (int*)realloc(changedsockets, changedsockets_size * sizeof(int));
-                }
-                changedsockets[changedsockets_count-1] = auth->connections[i].fd;
-            }
+            if (connection->revents & POLLHUP)
+                hupsockets.push_back(connection->fd);
+            else if (connection->revents & POLLIN)
+                changedsockets.push_back(connection->fd);
         }
 
-        for (int i = 0; i < changedsockets_count; i++)
+        for (vector<int>::iterator socket = changedsockets.begin(); socket != changedsockets.end(); ++socket)
         {
-            if (changedsockets[i] == auth->listeningsocket)
+            if (*socket == auth->listeningsocket)
             {
                 if (auth->acceptClientConnection() == -1)
                     auth->WriteServLog("purestg2: ERROR: can't accept client connection");
             }
             else
             {
-                if (auth->handleClientConnection(changedsockets[i]) == -1)
-                    auth->WriteServLog("purestg2: ERROR: can't handle client connection for socket %d", changedsockets[i]);
+                if (auth->handleClientConnection(*socket) == -1)
+                    auth->WriteServLog("purestg2: ERROR: can't handle client connection for socket %d", *socket);
             }
         }
 
-        for (int i = 0; i < hupsockets_count; i++)
+        for (vector<int>::iterator socket = hupsockets.begin(); socket != hupsockets.end(); ++socket)
         {
-            if (hupsockets[i] == auth->listeningsocket)
+            if (*socket == auth->listeningsocket)
                 auth->WriteServLog("purestg2: BUG: Our listening socket is running away!");
             else
             {
-                if (auth->delConnection(hupsockets[i]) < 0)
+                if (auth->delConnection(*socket) < 0)
                     auth->WriteServLog("purestg2: BUG: Can't del hupped connection!");
 
-                close(hupsockets[i]);
+                close(*socket);
             }
         }
     }
-
-    free(changedsockets);
-    free(hupsockets);
 
     auth->isRunning = false;
 
@@ -352,17 +318,9 @@ int AUTH_PURESTG2::SendMessage(const STG_MSG & msg, uint32_t ip) const
 //-----------------------------------------------------------------------------
 int AUTH_PURESTG2::addConnection(int socket)
 {
-    connections_count++;
-    if (connections_count > connections_size)
-    {
-        connections_size *= 2;
-        connections = (struct pollfd*)realloc(connections, connections_size * sizeof(struct pollfd));
-    }
-
-    int lastindex = connections_count - 1;
-
-    connections[lastindex].fd = socket;
-    connections[lastindex].events = POLLIN | POLLHUP;
+    connections.resize(connections.size() + 1);
+    connections.back().fd = socket;
+    connections.back().events = POLLIN | POLLHUP;
 
     return 0;
 }
@@ -370,34 +328,30 @@ int AUTH_PURESTG2::addConnection(int socket)
 int AUTH_PURESTG2::delConnection(int socket)
 {
     //remove connection
-    int i;
-    for (i = 0; i < connections_count; i++)
+    vector<struct pollfd>::iterator todel;
+    for (todel = connections.begin(); todel != connections.end(); ++todel)
     {
-        if (connections[i].fd == socket)
+        if (todel->fd == socket)
             break;
     }
 
-    if (i == connections_count)
+    if (todel == connections.end())
         return -1;
 
-    int lastindex = connections_count - 1;
-
-    if (i < lastindex)
-        connections[i].fd = connections[lastindex].fd;
-
-    connections_count--;
+    connections.erase(todel);
     
     //free unit holded by this socket
-    for(i = 0; i < busyunits_size; i++)
+    vector<int>::iterator unit;
+    for(unit = busyunits.begin(); unit != busyunits.end(); ++unit)
     {
-        if (busyunits[i] == socket)
+        if (*unit == socket)
             break;
     }
     
-    if (i == busyunits_size)
+    if (unit == busyunits.end())
         return -2;
         
-    busyunits[i] = -1;
+    *unit = -1;
 
     return 0;
 }
@@ -560,7 +514,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
 
     case PUREPROTO_ASK_IFUNIT:
         reply.ifunit = -1;
-        for(int i = 0; i < busyunits_size; i++)
+        for(int i = 0; i < busyunits.size(); i++)
         {
             if (busyunits[i] == -1)
             {
@@ -570,17 +524,9 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
             }
         }
         if (reply.ifunit == -1)
-        {            
-            int i = busyunits_size;
-            
-            busyunits_size *= 2;
-            busyunits = (int*)realloc(busyunits, busyunits_size * sizeof(int));
-            
-            reply.ifunit = i + minppp;
-            busyunits[i] = clientsocket;
-            
-            for(i++; i < busyunits_size; i++)
-                busyunits[i] = -1;
+        {
+            reply.ifunit = busyunits.size() + minppp;
+            busyunits.push_back(clientsocket);
         }
 
         reply.result = PUREPROTO_REPLY_OK;
