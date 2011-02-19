@@ -32,6 +32,7 @@
 #include <netinet/in.h>
 #include <signal.h>
 #include <poll.h>
+#include <signal.h>
 
 //pppd.h defines version of pppd
 #undef VERSION
@@ -308,8 +309,12 @@ void* socketwatch_thread(void* arg)
         
     if (watchfd.revents & POLLHUP)
     {
-        info("purestg2: stargazer socket has just been closed. Exiting.");
-        die(0);
+        info("purestg2: stargazer socket has just been closed. Terminating connection.");
+        if (kill(getpid(), SIGTERM) == -1)
+        {
+            error("Selfkilling failed. :( Have to die.");
+            die(0);
+        }
     }
     
     return NULL;
