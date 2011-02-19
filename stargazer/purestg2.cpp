@@ -418,6 +418,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
     case PUREPROTO_ASK_PASSWD:
     case PUREPROTO_ASK_IP:
     case PUREPROTO_ASK_PING:
+    case PUREPROTO_ASK_IPPARAM:
         user_iter ui;
 
         if (users->FindByName(string(ask.login), &ui) == 0)
@@ -557,7 +558,10 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
     case PUREPROTO_ASK_IPPARAM:
         reply.result = PUREPROTO_REPLY_OK;
         if (user && ipparamsave != -1)
+        {
+            if (d) WriteServLog("purestg2: Got ipparam: %s", ask.ipparam);
             getUserData(user, ipparamsave) = string(ask.ipparam);
+        }
         break;
 
     default:
