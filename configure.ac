@@ -42,8 +42,8 @@ esac
 AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_AWK
-AC_LANG([C++])
 AC_PROG_LIBTOOL
+
 
 # Set pppd and stargazer header directories
 AC_ARG_WITH([pppd-headers],
@@ -63,12 +63,19 @@ AC_SUBST([STGINCS])
 # Checks for header files.
 AC_CHECK_HEADERS([netinet/in.h stdlib.h string.h sys/socket.h unistd.h])
 
-AC_CHECK_FILES(
-	[$PPPINCS/pppd.h $STGINCS/stg_common.h $STGINCS/user.h $STGINCS/users.h $STGINCS/stg_logger.h $STGINCS/base_auth.h],
-	[],
-	[
-		AC_MSG_ERROR(header not found)
-	])
+CPPFLAGS="$CPPFLAGS -I$PPPINCS -I$STGINCS"
+
+AC_LANG([C])
+AC_CHECK_HEADERS([pppd.h], [], 
+[
+    AC_MSG_ERROR(header not found or not useable)
+])
+
+AC_LANG([C++])
+AC_CHECK_HEADERS([stg_common.h user.h users.h stg_logger.h base_auth.h], [], 
+[
+    AC_MSG_ERROR(headers not found or not useable)
+])
 
 # Set pppd and stargazer module directories
 AC_ARG_WITH([pppd-libdir],
