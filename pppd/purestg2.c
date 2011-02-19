@@ -119,7 +119,10 @@ int chap_stg_verify(char *user, char *ourname, int id,
     //check if Stargazer accept given ipparam
     if (pureproto_setipparam(ipparam, user) == -1)
     {
-        error("purestg2: Stargazer refuse to accept ipparam \"%s\" for user \"%s\".", ipparam, user);
+        if (ipparam)
+            error("purestg2: Stargazer refuse to accept ipparam \"%s\" for user \"%s\".", ipparam, user);
+        else
+            error("purestg2: Stargazer refuse to accept empty ipparam for user \"%s\".", user);
         return code;
     }
 
@@ -172,7 +175,10 @@ int pap_stg_verify(char *user,
     {
         if (pureproto_setipparam(ipparam, user) == -1)
         {
-            error("purestg2: Stargazer refuse to accept ipparam \"%s\" for user \"%s\".", ipparam, user);
+            if (ipparam)
+                error("purestg2: Stargazer refuse to accept ipparam \"%s\" for user \"%s\".", ipparam, user);
+            else
+                error("purestg2: Stargazer refuse to accept empty ipparam for user \"%s\".", user);
             return 0;
         }
     }
