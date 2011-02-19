@@ -81,6 +81,7 @@ AUTH_PURESTG2::AUTH_PURESTG2()
     isRunning = false;
     minppp = 10;
     d = 0;
+    ipparamsave = -1;
 }
 //-----------------------------------------------------------------------------
 AUTH_PURESTG2::~AUTH_PURESTG2()
@@ -130,6 +131,16 @@ int AUTH_PURESTG2::ParseSettings()
         {
             WriteServLog("purestg2: Debug output enabled.");
             d = 1;
+        }
+        else if (settings.moduleParams[i].param == "ipparamsave")
+        {
+            char* endPtr;
+            ipparamsave = strtol(settings.moduleParams[i].value[0].c_str(), &endPtr, 10);
+            if (*endPtr != '\0' || ipparamsave < 0 || ipparamsave > 9)
+            {
+                errorStr = "Parameter \"ipparamsave\" must have an interger value from 0 to 9.";
+                return 1;
+            }
         }
         else
         {
@@ -458,9 +469,6 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
             break;
         }
 
-        //remove hostip from userdata9
-        //user->property.userdata9 = string("");
-
         //unauthorize
         user->Unauthorize(this);
 
@@ -545,6 +553,12 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
             }
         }
         break;
+        
+    case PUREPROTO_ASK_IPPARAM:
+        reply.result = PUREPROTO_REPLY_OK;
+        if (user && ipparamsave != -1)
+            getUserData(user, ipparamsave) = string(ask.ipparam);
+        break;
 
     default:
         WriteServLog("purestg2: ERROR: Unknown ask packet type: %d.", ask.type);
@@ -561,5 +575,28 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
     }
 
     return 0;
+}
+//-----------------------------------------------------------------------------
+#define USERDATACASECONDITION(_num) \
+    case _num: \
+        return user->property.userdata##_num;
+USER_PROPERTY<string>&  AUTH_PURESTG2::getUserData(USER* user, int dataNum)
+{
+    switch (dataNum)
+    {
+        USERDATACASECONDITION(0)
+        USERDATACASECONDITION(1)
+        USERDATACASECONDITION(2)
+        USERDATACASECONDITION(3)
+        USERDATACASECONDITION(4)
+        USERDATACASECONDITION(5)
+        USERDATACASECONDITION(6)
+        USERDATACASECONDITION(7)
+        USERDATACASECONDITION(8)
+        USERDATACASECONDITION(9)
+        default:
+            WriteServLog("purestg2: BUG: incorrect userdata index: %d", dataNum);
+            return user->property.userdata0;
+    }
 }
 //-----------------------------------------------------------------------------

@@ -76,20 +76,24 @@ Here is an example chunk of Stargazer configuration file for
 using this plugin:
 -----|<--------------------------------------
     <Module auth_purestg2>
-        authsocket = /var/run/purestg2.sock
-        minppp = 5
+        authsocket = /var/run/purestg2.sock     #valid RW accessable path, required.
+        minppp = 5                              #positive integer, optional, default is 10.
+        ipparamsave = 4                         #integer from 0 to 9, optional, no default.
     </Module>
 ------------>|-------------------------------
 authsocket is UNIX domain socket address.
 minppp is the minimum PPP unit number for Stargazer PPP
 clients.
+If ipparamsave option exists, then ipparam from pppd
+will be saved into userdata<ipparamsave> user field on
+user connect.
 
 Here is an example chunk of pppd options file for using 
 this plugin:
 -----|<--------------------------------------
-    plugin purestg2.so
-    authsocket /var/run/purestg2.sock
-    keepalivetimeout 30
+    plugin purestg2.so                  #required.
+    authsocket /var/run/purestg2.sock   #required.
+    keepalivetimeout 30                 #positive integer, optional, default is 60.
 ------------>|-------------------------------
 authsocket is UNIX domain socket address.
 keepalivetimeout is the time between two sequential PING

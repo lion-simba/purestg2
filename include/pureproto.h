@@ -35,11 +35,16 @@
 #define PUREPROTO_ASK_IP            4 //ask stg for user IP
 #define PUREPROTO_ASK_IFUNIT        5 //ask stg for free ifunit
 #define PUREPROTO_ASK_PING          6 //ask stg to reply back
+#define PUREPROTO_ASK_IPPARAM       7 //ask stg to store ipparam
 
+
+#define IPPARAM_LEN     50
 struct pureproto_packet_ask {
-    int             type;               //request type
-    char            login[LOGIN_LEN+1]; //user login, maybe zero if not known yet
-    struct in_addr  hostip;             //host, from which user is connected
+    int             type;                   //request type
+    char            login[LOGIN_LEN+1];     //user login, maybe zero if not known yet
+    union {
+        char        ipparam[IPPARAM_LEN+1]; //ipparam, given to pppd
+    };
 };
 
 // reply types

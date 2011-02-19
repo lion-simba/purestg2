@@ -35,7 +35,6 @@
 //global variables
 
 static int 		stg_socket = -1;
-static struct in_addr 	user_hostip;
 
 //every function return non-negative on success and negative number on error
 
@@ -69,15 +68,41 @@ int pureproto_disconnect()
     return 0;
 }
 
-//sets user's host ip
-int pureproto_sethostip(const char* hostip)
+//transfer ipparam to Stargazer
+int pureproto_setipparam(const char* ipparam, const char* login)
 {
-    struct in_addr temp;
-    if (inet_aton(hostip, &temp) == 0)
+    struct pureproto_packet_ask ask;
+    struct pureproto_packet_reply reply;
+    int result;
+    
+    if (stg_socket < 0)
+        return -1;
+        
+    memset(&ask, 0, sizeof(ask));
+    
+    ask.type = PUREPROTO_ASK_IPPARAM;
+    strncpy(ask.login, login, LOGIN_LEN);
+    strncpy(ask.ipparam, ipparam, IPPARAM_LEN);
+    
+    if (send(stg_socket, &ask, sizeof(ask), 0) == -1)
         return -1;
 
-    user_hostip = temp;
+    result = recv(stg_socket, &reply, sizeof(reply), MSG_WAITALL);
+    if (result == -1)
+        return -1;
+        
+    if (result != sizeof(reply))
+        return -1;
+    
+    if (ask.type != reply.type)
+        return -1;
 
+    if (strncmp(ask.login, reply.login, LOGIN_LEN) != 0)
+        return -1;
+
+    if (reply.result != PUREPROTO_REPLY_OK)
+        return -1;
+    
     return 0;
 }
 
@@ -95,7 +120,6 @@ int pureproto_connectuser(const char* login)
 
     ask.type = PUREPROTO_ASK_CONNECT;
     strncpy(ask.login, login, LOGIN_LEN);
-    ask.hostip = user_hostip;
 
     if (send(stg_socket, &ask, sizeof(ask), 0) == -1)
         return -1;
@@ -133,7 +157,6 @@ int pureproto_disconnectuser(const char* login)
 
     ask.type = PUREPROTO_ASK_DISCONNECT;
     strncpy(ask.login, login, LOGIN_LEN);
-    ask.hostip = user_hostip;
 
     if (send(stg_socket, &ask, sizeof(ask), 0) == -1)
         return -1;
@@ -171,7 +194,6 @@ int pureproto_ping(int timeout, const char* login)
 
     ask.type = PUREPROTO_ASK_PING;
     strncpy(ask.login, login, LOGIN_LEN);
-    ask.hostip = user_hostip;
 
     if (send(stg_socket, &ask, sizeof(ask), 0) == -1)
         return -1;
@@ -220,7 +242,6 @@ int pureproto_getpasswd(char* passwd, const char* login)
 
     ask.type = PUREPROTO_ASK_PASSWD;
     strncpy(ask.login, login, LOGIN_LEN);
-    ask.hostip = user_hostip;
 
     if (send(stg_socket, &ask, sizeof(ask), 0) == -1)
         return -1;
@@ -260,7 +281,6 @@ int pureproto_getip(struct in_addr* userip, const char* login)
 
     ask.type = PUREPROTO_ASK_IP;
     strncpy(ask.login, login, LOGIN_LEN);
-    ask.hostip = user_hostip;
 
     if (send(stg_socket, &ask, sizeof(ask), 0) == -1)
         return -1;
@@ -299,7 +319,6 @@ int pureproto_getifunit(int* ifunit)
     memset(&ask, 0, sizeof(ask));
 
     ask.type = PUREPROTO_ASK_IFUNIT;
-    ask.hostip = user_hostip;
 
     if (send(stg_socket, &ask, sizeof(ask), 0) == -1)
         return -1;

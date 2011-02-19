@@ -34,8 +34,8 @@ int pureproto_connect(const char* socketpath);
 //terminate connection to stargazer
 int pureproto_disconnect();
 
-//sets user's host ip
-int pureproto_sethostip(const char* hostip);
+//transfer ipparam to Stargazer
+int pureproto_setipparam(const char* ipparam, const char* login);
 
 //ask stg to connect user
 int pureproto_connectuser(const char* login);

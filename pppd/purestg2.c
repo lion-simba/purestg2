@@ -115,6 +115,16 @@ int chap_stg_verify(char *user, char *ourname, int id,
         error("purestg2: Login length of login \"%s\" is too big.", user);
         return code;
     }
+    
+    //check if Stargazer accept given ipparam
+    if (ipparam && ipparam[0] != '\0')
+    {
+        if (pureproto_setipparam(ipparam, user) == -1)
+        {
+            error("purestg2: Stargazer refuse to accept ipparam \"%s\" for user \"%s\".", ipparam, user);
+            return code;
+        }
+    }
 
     //ask stg if user can be turned on
     //if ok, ask user's password
@@ -158,6 +168,16 @@ int pap_stg_verify(char *user,
     {
         error("purestg2: Login length of login \"%s\" is too big.", user);
         return 0;
+    }
+    
+    //check if Stargazer accept given ipparam
+    if (ipparam && ipparam[0] != '\0')
+    {
+        if (pureproto_setipparam(ipparam, user) == -1)
+        {
+            error("purestg2: Stargazer refuse to accept ipparam \"%s\" for user \"%s\".", ipparam, user);
+            return 0;
+        }
     }
 
     //ask stg if user can be turned on
@@ -276,17 +296,7 @@ int stg_phase(int phase)
 
         info("purestg2: Connected to stargazer via %s.", authsocketpath);
 
-        if (ipparam && ipparam[0] != '\0')
-        {
-            if (pureproto_sethostip(ipparam) == -1)
-                error("purestg2: Can't set host ip.");
-        }
-        else
-        {
-            info("purestg2: No ipparam exist, set 0.0.0.0 as user host ip.");
-            if (pureproto_sethostip("0.0.0.0") == -1)
-                error("purestg2: Can't set host ip.");
-        }
+
 
         if (pureproto_getifunit(&req_unit) == -1)
         {

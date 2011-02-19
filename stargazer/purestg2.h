@@ -68,15 +68,17 @@ public:
     int                 SendMessage(const STG_MSG & msg, uint32_t ip) const;
 
 private:
-    static void*        Run(void * me);
+    static void*            Run(void * me);
     
-    STG_LOGGER&         WriteServLog;
+    STG_LOGGER&             WriteServLog;
     
-    int                 addConnection(int socket);
-    int                 delConnection(int socket);
+    int                     addConnection(int socket);
+    int                     delConnection(int socket);
     
-    int                 acceptClientConnection();
-    int                 handleClientConnection(int clientsocket);
+    int                     acceptClientConnection();
+    int                     handleClientConnection(int clientsocket);
+    
+    USER_PROPERTY<string>&  getUserData(USER* user, int dataNum);
     
 private:
     mutable string          errorStr;
@@ -92,6 +94,7 @@ private:
     int                     minppp;
     
     int                     d;
+    int                     ipparamsave;        //the userdata number to save ipparam to
     
     MODULE_SETTINGS         settings;
     USERS*                  users;
