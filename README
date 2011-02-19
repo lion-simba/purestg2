@@ -29,6 +29,9 @@ if the user is allowed to get access. If user allowed to get an
 access, it's password is copied back to pppd and used to do
 authentication of user. Both PAP and CHAP (including MS-CHAP-v2)
 methods are supported.
+2.1. Also, if 'ipparamauth' option is specified, Stargazer will
+check if supplied ipparam is valid for this user. Look for more
+details in CONFIGURATION section below.
 
 3. If authentication was successfull:
 3.1 Ask Stargazer for user's IP address and set it as remote
@@ -78,15 +81,27 @@ using this plugin:
     <Module auth_purestg2>
         authsocket = /var/run/purestg2.sock     #valid RW accessable path, required.
         minppp = 5                              #positive integer, optional, default is 10.
-        ipparamsave = 4                         #integer from 0 to 9, optional, no default.
+        ipparamsave = 4                         #integer from 0 to 9, must not equal to ipparamauth, optional, no default.
+        ipparamauth = 2                         #integer from 0 to 9, must not equal to ipparamsave, optional, no default.
+        allowemptyipparam                       #boolean, optional, require 'ipparamauth' option.
     </Module>
 ------------>|-------------------------------
-authsocket is UNIX domain socket address.
-minppp is the minimum PPP unit number for Stargazer PPP
+    'authsocket' is UNIX domain socket address.
+    'minppp' is the minimum PPP unit number for Stargazer PPP
 clients.
-If ipparamsave option exists, then ipparam from pppd
-will be saved into userdata<ipparamsave> user field on
+    If 'ipparamsave' option is set, then 'ipparam' from pppd
+will be saved into 'userdata<ipparamsave>' user field on
 user connect.
+    If 'ipparamauth' option is set, then Stargazer check if
+'ipparam' from pppd is present in 'userdata<ipparamauth>'
+user field, which must be format of:
+<allowed ipparam 1>,<allowed ipparam 2>,...
+If 'ipparam' is not listed in 'userdata<ipparamauth>', then
+user authentication is rejected. If 'userdata<ipparamauth>'
+is empty, then check doesn't happen and authentication will
+succeed if user password is correct. If no ipparam was
+got from pppd, then authenticate will fail unless
+'allowemptyipparam' option is set.
 
 Here is an example chunk of pppd options file for using 
 this plugin:

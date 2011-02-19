@@ -1,6 +1,6 @@
 New in 2.1:
-* New Stargazer plugin configuration option: ipparamsave.
-  Check README for details.
+* New Stargazer plugin configuration options: 'ipparamsave',
+  'ipparamauth', 'allowemptyipparam'. Check README for details.
 
 New in 2.0:
 * Initial release.

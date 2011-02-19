@@ -94,7 +94,10 @@ private:
     int                     minppp;
     
     int                     d;
+    
     int                     ipparamsave;        //the userdata number to save ipparam to
+    int                     ipparamauth;        //the userdata number to check ipparam against
+    bool                    allowemptyipparam;
     
     MODULE_SETTINGS         settings;
     USERS*                  users;

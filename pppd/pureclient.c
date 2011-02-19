@@ -82,7 +82,8 @@ int pureproto_setipparam(const char* ipparam, const char* login)
     
     ask.type = PUREPROTO_ASK_IPPARAM;
     strncpy(ask.login, login, LOGIN_LEN);
-    strncpy(ask.ipparam, ipparam, IPPARAM_LEN);
+    if (ipparam)
+        strncpy(ask.ipparam, ipparam, IPPARAM_LEN);
     
     if (send(stg_socket, &ask, sizeof(ask), 0) == -1)
         return -1;

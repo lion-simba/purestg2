@@ -67,6 +67,17 @@ BASE_PLUGIN * GetPlugin()
 {
     return pstg2c.GetPlugin();
 }
+
+
+void splitstring(const string &s, char delim, vector<string>& elems)
+{
+    stringstream ss(s);
+    string item;
+    while(getline(ss, item, delim))
+        elems.push_back(item);
+}
+                            
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -82,6 +93,8 @@ AUTH_PURESTG2::AUTH_PURESTG2()
     minppp = 10;
     d = 0;
     ipparamsave = -1;
+    ipparamauth = -1;
+    allowemptyipparam = false;
 }
 //-----------------------------------------------------------------------------
 AUTH_PURESTG2::~AUTH_PURESTG2()
@@ -142,6 +155,20 @@ int AUTH_PURESTG2::ParseSettings()
                 return 1;
             }
         }
+        else if (settings.moduleParams[i].param == "ipparamauth")
+        {
+            char* endPtr;
+            ipparamauth = strtol(settings.moduleParams[i].value[0].c_str(), &endPtr, 10);
+            if (*endPtr != '\0' || ipparamauth < 0 || ipparamauth > 9)
+            {
+                errorStr = "Parameter \"ipparamauth\" must have an interger value from 0 to 9.";
+                return 1;
+            }
+        }
+        else if (settings.moduleParams[i].param == "allowemptyipparam")
+        {
+            allowemptyipparam = true;
+        }
         else
         {
             errorStr = string("Unknown parameter \"") + settings.moduleParams[i].param + string("\"");
@@ -152,6 +179,18 @@ int AUTH_PURESTG2::ParseSettings()
     if (authsocketpath == "")
     {
         errorStr = "Parameter \"authsocket\" must have a value.";
+        return 1;
+    }
+    
+    if (ipparamauth != -1 && ipparamsave != -1 && ipparamauth == ipparamsave)
+    {
+        errorStr = "Values for \"ipparamsave\" and \"ipparamauth\" must be different.";
+        return 1;
+    }
+    
+    if (allowemptyipparam && ipparamauth == -1)
+    {
+        errorStr = "Parameter \"ipparamauth\" must be set to use \"allowemptyipparam\" option.";
         return 1;
     }
 
@@ -557,10 +596,41 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
         
     case PUREPROTO_ASK_IPPARAM:
         reply.result = PUREPROTO_REPLY_OK;
-        if (user && ipparamsave != -1)
+        if (d) WriteServLog("purestg2: Got ipparam: \"%s\"", ask.ipparam);
+        if (user)
         {
-            if (d) WriteServLog("purestg2: Got ipparam: %s", ask.ipparam);
-            getUserData(user, ipparamsave) = string(ask.ipparam);
+            string ipparam(ask.ipparam);
+            if (ipparamsave != -1)
+                getUserData(user, ipparamsave) = ipparam;
+        
+            //check if ipparam is allowed
+            if (ipparamauth != -1)
+            {
+                if (ipparam.empty())
+                {
+                    if (!allowemptyipparam)
+                    {
+                        WriteServLog("purestg2: Empty ipparam is disallowed.");
+                        reply.result = PUREPROTO_REPLY_ERROR;
+                    }
+                }
+                else
+                {
+                    string userdata = getUserData(user, ipparamauth);
+                    if (!userdata.empty())
+                    {
+                        vector<string> allowed;
+                        splitstring(userdata, ',', allowed);
+                        if (find(allowed.begin(), allowed.end(), ipparam) == allowed.end())
+                        {
+                            //given ipparam was not found in userdata field, so reply with error
+                            //and deny the authentication
+                            WriteServLog("purestg2: ipparam \"%s\" was't found in userdata%d field for user \"%s\".", ask.ipparam, ipparamauth, ask.login);
+                            reply.result = PUREPROTO_REPLY_ERROR;
+                        }
+                    }
+                }
+            }
         }
         break;
 
