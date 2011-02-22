@@ -30,6 +30,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <netinet/in.h>
+#include <signal.h>
 
 //pppd.h defines version of pppd
 #undef VERSION
@@ -278,7 +279,11 @@ void keep_alive(void* opaque)
         else
             error("purestg2: No ping from stargazer, exiting.");
 
-        die(1);
+        if (kill(getpid(), SIGTERM) == -1)
+        {
+            error("purestg2: Can't gracefully kill myself, will die.");
+            die(1);
+        }
         return;
     }
 
