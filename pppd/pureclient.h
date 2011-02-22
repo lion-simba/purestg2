@@ -23,6 +23,9 @@
 
 #include <netinet/in.h>
 
+
+extern int stg_socket; // socket will be initialized after call to pureproto_connect()
+
 /*
     functions to work with pureprotocol
 */

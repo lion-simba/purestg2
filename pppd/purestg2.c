@@ -31,6 +31,7 @@
 #include <unistd.h>
 #include <netinet/in.h>
 #include <signal.h>
+#include <poll.h>
 
 //pppd.h defines version of pppd
 #undef VERSION
@@ -60,6 +61,7 @@ static option_t options[] = {
 /* global variables */
 
 static char userlogin[LOGIN_LEN+1];
+pthread_t socketwatch;
 
 /*
     pppd hooks and notifiers
@@ -292,6 +294,27 @@ void keep_alive(void* opaque)
     timeout(&keep_alive, 0, keepalivetimeout, 0);
 }
 
+void* socketwatch_thread(void* arg)
+{
+    int pres;
+    struct pollfd watchfd;
+    
+    watchfd.fd = stg_socket;
+    watchfd.events = 0;
+    watchfd.revents = 0;
+    
+    if(poll(&watchfd, 1, -1) < 0)
+        error("purestg2: poll failed!");
+        
+    if (watchfd.revents & POLLHUP)
+    {
+        info("purestg2: stargazer socket has just been closed. Exiting.");
+        die(0);
+    }
+    
+    return NULL;
+}
+
 int stg_phase(int phase)
 {
     if (phase == PHASE_SERIALCONN)
@@ -299,6 +322,13 @@ int stg_phase(int phase)
         if (pureproto_connect(authsocketpath) == -1)
         {
             error("purestg2: Can't connect to stargazer's socket %s. Exiting.", authsocketpath);
+            die(1);
+        }
+        
+        //spawning socketwatch thread
+        if (pthread_create(&socketwatch, NULL, socketwatch_thread) != 0)
+        {
+            error("purestg2: Can't create socketwatch thread. Exiting.");
             die(1);
         }
 

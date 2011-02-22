@@ -34,7 +34,7 @@
 
 //global variables
 
-static int 		stg_socket = -1;
+int                     stg_socket = -1;
 
 //every function return non-negative on success and negative number on error
 
