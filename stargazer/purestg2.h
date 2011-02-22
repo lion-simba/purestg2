@@ -89,6 +89,7 @@ private:
     pthread_t               listeningthread;
     
     vector<struct pollfd>   connections;        //connections[0] is for listeningsocket
+    map<int, int>           usersockets;        //maps userid to socket it is using
     
     vector<int>             busyunits;          //busyunits[unitnum-minppp] = socket_id which holds unitnum or -1 if unitnum is free
     int                     minppp;
@@ -98,6 +99,8 @@ private:
     int                     ipparamsave;        //the userdata number to save ipparam to
     int                     ipparamauth;        //the userdata number to check ipparam against
     bool                    allowemptyipparam;
+    
+    bool                    kickprevious;
     
     MODULE_SETTINGS         settings;
     USERS*                  users;

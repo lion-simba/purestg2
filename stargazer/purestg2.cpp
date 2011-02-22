@@ -95,6 +95,7 @@ AUTH_PURESTG2::AUTH_PURESTG2()
     ipparamsave = -1;
     ipparamauth = -1;
     allowemptyipparam = false;
+    kickprevious = false;
 }
 //-----------------------------------------------------------------------------
 AUTH_PURESTG2::~AUTH_PURESTG2()
@@ -168,6 +169,10 @@ int AUTH_PURESTG2::ParseSettings()
         else if (settings.moduleParams[i].param == "allowemptyipparam")
         {
             allowemptyipparam = true;
+        }
+        else if (settings.moduleParams[i].param == "kickprevious")
+        {
+            kickprevious = true;
         }
         else
         {
@@ -377,6 +382,16 @@ int AUTH_PURESTG2::addConnection(int socket)
 //-----------------------------------------------------------------------------
 int AUTH_PURESTG2::delConnection(int socket)
 {
+    //remove socket from usersockets map
+    for(map<int, int>::iterator iter = usersockets.begin(); iter != usersockets.end(); ++iter)
+    {
+        if (iter->second == socket)
+        {
+            usersockets.erase(iter);
+            break;
+        }
+    }
+
     //remove connection
     vector<struct pollfd>::iterator todel;
     for (todel = connections.begin(); todel != connections.end(); ++todel)
@@ -402,7 +417,7 @@ int AUTH_PURESTG2::delConnection(int socket)
         return -2;
         
     *unit = -1;
-
+    
     return 0;
 }
 //-----------------------------------------------------------------------------
@@ -484,6 +499,34 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
             reply.result = PUREPROTO_REPLY_ERROR;
             break;
         }
+        
+        //check if already connected and disconnect previous instance if necessary
+        if (user->GetAuthorized())
+        {
+            if (user->IsAuthorizedBy(this) && kickprevious)
+            {
+                map<int, int>::iterator iter = usersockets.find(user->GetID());
+                if (iter == usersockets.end())
+                {
+                    WriteServLog("purestg2: BUG: can't find previous user socket for user \"%s\"", ask.login);
+                    break;
+                }
+                int oldsocket = iter->second;
+                WriteServLog("purestg2: terminating previous session for user \"%s\"", ask.login);
+                user->Unauthorize(this);
+                if (delConnection(oldsocket) < 0)
+                    WriteServLog("purestg2: BUG: can't delConnection for oldsocket=%d for user \"%s\"", oldsocket, ask.login);
+                close(oldsocket);
+                
+                //TODO: wait for old pppd really finish somehow.
+            }
+            else
+            {
+                WriteServLog("purestg2: \"%s\" (socket=%d) is already connected.", ask.login, clientsocket);
+                reply.result = PUREPROTO_REPLY_ERROR;
+                break;
+            }
+        }
 
         //authorize user
         if (user->Authorize((user->property.ips.Get()[0]).ip, string("purestg"), 0xffffffff, this))
@@ -492,11 +535,10 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
             reply.result = PUREPROTO_REPLY_ERROR;
             break;
         }
+        
+        usersockets[user->GetID()] = clientsocket;
 
         WriteServLog("purestg2: User %s (socket=%d) is connected.", ask.login, clientsocket);
-
-        //set hostip to userdata9
-        //user->property.userdata9.Set(string(inet_ntoa(ask.hostip)), );
 
         reply.result = PUREPROTO_REPLY_OK;
         break;
@@ -535,9 +577,12 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
         //check if already connected
         if (user->GetAuthorized())
         {
-            WriteServLog("purestg2: User %s (socket=%d) is already connected.", ask.login, clientsocket);
-            reply.result = PUREPROTO_REPLY_ERROR;
-            break;
+            if (!user->IsAuthorizedBy(this) || !kickprevious)
+            {
+                WriteServLog("purestg2: User %s (socket=%d) is already connected.", ask.login, clientsocket);
+                reply.result = PUREPROTO_REPLY_ERROR;
+                break;
+            }
         }
 
         //get user passwd
