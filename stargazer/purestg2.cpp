@@ -512,7 +512,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
                     break;
                 }
                 int oldsocket = iter->second;
-                WriteServLog("purestg2: terminating previous session for user \"%s\"", ask.login);
+                WriteServLog("purestg2: Terminating previous session (oldsocket=%d) for user \"%s\"", oldsocket, ask.login);
                 user->Unauthorize(this);
                 if (delConnection(oldsocket) < 0)
                     WriteServLog("purestg2: BUG: can't delConnection for oldsocket=%d for user \"%s\"", oldsocket, ask.login);
