@@ -43,6 +43,13 @@ AC_PROG_CXX
 AC_PROG_CC
 AC_PROG_AWK
 AC_PROG_LIBTOOL
+AX_PTHREAD(
+    [
+        AC_DEFINE(HAVE_PTHREAD)
+    ],
+    [
+        AC_MSG_ERROR(pthreads not found or not working)
+    ])
 
 
 # Set pppd and stargazer header directories
