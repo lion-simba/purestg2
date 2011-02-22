@@ -31,6 +31,7 @@
 #include <sys/un.h>
 
 #include <stg/user.h>
+#include <stg/noncopyable.h>
 
 #include "purestg2.h"
 #include "pureproto.h"
@@ -60,6 +61,65 @@ public:
         return dc;
     };
 };
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
+class CONNECTED_NOTIFIER: public PROPERTY_NOTIFIER_BASE<bool>,
+                       private NONCOPYABLE
+{
+public:
+    static CONNECTED_NOTIFIER * Create(AUTH_PURESTG2 * auth, USER * user);
+    void Notify(const bool & oldVal, const bool & newVal);
+        
+private:
+    CONNECTED_NOTIFIER(AUTH_PURESTG2 * a, USER * u);
+    ~CONNECTED_NOTIFIER();
+
+    USER * user;
+    AUTH_PURESTG2 * auth;
+
+#ifdef CONNECTED_NOTIFIER_DEBUG    
+    static int notifiers_count;
+#endif
+};
+
+#ifdef CONNECTED_NOTIFIER_DEBUG    
+int CONNECTED_NOTIFIER::notifiers_count = 0;
+#endif
+
+CONNECTED_NOTIFIER * CONNECTED_NOTIFIER::Create(AUTH_PURESTG2 * auth, USER * user)
+{
+    //ensure we can't be created on stack
+    return new CONNECTED_NOTIFIER(auth, user);
+}
+
+CONNECTED_NOTIFIER::CONNECTED_NOTIFIER(AUTH_PURESTG2 * a, USER * u) 
+    :auth(a), user(u)
+{
+#ifdef CONNECTED_NOTIFIER_DEBUG
+notifiers_count++;
+GetStgLogger()("CONNECTED_NOTIFIER created (%d)", notifiers_count);
+#endif
+}
+
+CONNECTED_NOTIFIER::~CONNECTED_NOTIFIER()
+{
+#ifdef CONNECTED_NOTIFIER_DEBUG
+notifiers_count--;
+GetStgLogger()("CONNECTED_NOTIFIER destroyed (%d)", notifiers_count);
+#endif
+}
+
+void CONNECTED_NOTIFIER::Notify(const bool &, const bool &)
+{
+    if (auth->CheckSocket(user))
+    {
+        user->DelConnectedAfterNotifier(this);
+        delete this; //self destruction :)
+    }
+}
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -310,6 +370,7 @@ int AUTH_PURESTG2::Stop()
 
     //shutdown server
     delConnection(listeningsocket);
+    shutdown(listeningsocket, SHUT_RDWR);
     close(listeningsocket);
 
     return 0;
@@ -583,6 +644,9 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
                 WriteServLog("purestg2: ERROR: Can't find unit number for user \"%s\" (socket=%d).", ask.login, clientsocket);
         }
 
+        //create notifier on user connected state change for handling user's disconnect by STG
+        user->AddConnectedAfterNotifier(CONNECTED_NOTIFIER::Create(this, user));
+
         WriteServLog("purestg2: User %s (socket=%d) is connected.", ask.login, clientsocket);
 
         reply.result = PUREPROTO_REPLY_OK;
@@ -762,5 +826,25 @@ USER_PROPERTY<string>&  AUTH_PURESTG2::getUserData(USER* user, int dataNum)
             WriteServLog("purestg2: BUG: incorrect userdata index: %d", dataNum);
             return user->GetProperty().userdata0;
     }
+}
+//-----------------------------------------------------------------------------
+bool AUTH_PURESTG2::CheckSocket(USER * user)
+{
+    if (user->GetConnected())
+        return false; //all is OK, nothing to do
+        
+    int socket = usersockets[user->GetID()];
+            
+    WriteServLog("purestg2: User \"%s\" is disconnected by stargazer. Closing auth socket %d.", user->GetLogin().c_str(), socket);
+    
+    user->Unauthorize(this);
+    
+    if (delConnection(socket) < 0)
+        WriteServLog("purestg2: BUG: Can't del connection socket %d!", socket);
+    
+    shutdown(socket, SHUT_RDWR);
+    close(socket);
+    
+    return true;
 }
 //-----------------------------------------------------------------------------

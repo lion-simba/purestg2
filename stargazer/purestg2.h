@@ -66,6 +66,9 @@ public:
     uint16_t            GetStopPosition() const;
 
     int                 SendMessage(const STG_MSG & msg, uint32_t ip) const;
+    
+public:
+    bool                CheckSocket(USER * user); //check if user identified by user_id is IsInetable(), and if not - close the socket and return true
 
 private:
     static void*            Run(void * me);
