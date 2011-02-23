@@ -1,7 +1,7 @@
 New in 2.1:
 * New Stargazer plugin configuration options: 'ipparamsave',
-  'ipparamauth', 'allowemptyipparam', 'kickprevious'.
-  Check README for details.
+  'ipparamauth', 'allowemptyipparam', 'kickprevious',
+  'pppunitsave'. Check README for details.
 * Graceful pppd shutdown, when Stargazer exits.
 
 New in 2.0:

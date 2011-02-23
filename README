@@ -81,10 +81,11 @@ using this plugin:
     <Module auth_purestg2>
         authsocket = /var/run/purestg2.sock     #valid RW accessable path, required.
         minppp = 5                              #positive integer, optional, default is 10.
-        ipparamsave = 4                         #integer from 0 to 9, must not equal to ipparamauth, optional, no default.
-        ipparamauth = 2                         #integer from 0 to 9, must not equal to ipparamsave, optional, no default.
+        ipparamsave = 4                         #integer from 0 to 9, must not equal to ipparamauth and pppunitsave, optional, no default.
+        ipparamauth = 2                         #integer from 0 to 9, must not equal to ipparamsave and pppunitsave, optional, no default.
         allowemptyipparam                       #boolean, optional, require 'ipparamauth' option.
         kickprevious                            #boolean, optional.
+        pppunitsave = 5                         #integer from 0 to 9, must not equal to ipparamauth and ipparamsave, optional, no default.
     </Module>
 ------------>|-------------------------------
     'authsocket' is UNIX domain socket address.
@@ -108,6 +109,9 @@ same login if user already connected. But if 'kickprevious'
 option is set, then in case of new connection attempt with
 the same login, the old connection will be terminated and 
 the new connection will succeed.
+    If 'pppunitsave' option is set, then Stargazer saves
+ppp interface unit number the user connected to in 
+'userdata<pppunitsave>' user field on user connect.
 
 Here is an example chunk of pppd options file for using 
 this plugin:

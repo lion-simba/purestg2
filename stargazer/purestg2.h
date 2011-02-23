@@ -96,6 +96,8 @@ private:
     
     int                     d;
     
+    int                     unitsave;           //the userdata number to save PPP unit number to
+    
     int                     ipparamsave;        //the userdata number to save ipparam to
     int                     ipparamauth;        //the userdata number to check ipparam against
     bool                    allowemptyipparam;

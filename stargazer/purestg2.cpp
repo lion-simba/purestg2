@@ -96,6 +96,7 @@ AUTH_PURESTG2::AUTH_PURESTG2()
     ipparamauth = -1;
     allowemptyipparam = false;
     kickprevious = false;
+    unitsave = -1;
 }
 //-----------------------------------------------------------------------------
 AUTH_PURESTG2::~AUTH_PURESTG2()
@@ -174,6 +175,16 @@ int AUTH_PURESTG2::ParseSettings()
         {
             kickprevious = true;
         }
+        else if (settings.moduleParams[i].param == "pppunitsave")
+        {
+            char* endPtr;
+            unitsave = strtol(settings.moduleParams[i].value[0].c_str(), &endPtr, 10);
+            if (*endPtr != '\0' || unitsave < 0 || unitsave > 9)
+            {
+                errorStr = "Parameter \"unitsave\" must have an interger value from 0 to 9.";
+                return 1;
+            }
+        }
         else
         {
             errorStr = string("Unknown parameter \"") + settings.moduleParams[i].param + string("\"");
@@ -187,9 +198,27 @@ int AUTH_PURESTG2::ParseSettings()
         return 1;
     }
     
-    if (ipparamauth != -1 && ipparamsave != -1 && ipparamauth == ipparamsave)
+    int busyuserdata_count = 0;
+    set<int> busyuserdata;
+    if (ipparamauth != -1)
     {
-        errorStr = "Values for \"ipparamsave\" and \"ipparamauth\" must be different.";
+        busyuserdata.insert(ipparamauth);
+        busyuserdata_count++;
+    }
+    if (ipparamsave != -1)
+    {
+        busyuserdata.insert(ipparamsave);
+        busyuserdata_count++;
+    }
+    if (unitsave != -1)
+    {
+        busyuserdata.insert(unitsave);
+        busyuserdata_count++;
+    }
+    
+    if (busyuserdata.size() != busyuserdata_count)
+    {
+        errorStr = "Values for \"ipparamsave\", \"ipparamauth\" and \"pppunitsave\" must be different.";
         return 1;
     }
     
@@ -537,6 +566,19 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
         }
         
         usersockets[user->GetID()] = clientsocket;
+        
+        if (unitsave != -1)
+        {
+            vector<int>::iterator unit = find(busyunits.begin(), busyunits.end(), clientsocket);
+            if (unit != busyunits.end())
+            {
+                stringstream ss;
+                ss << (unit - busyunits.begin() + minppp);
+                getUserData(user, unitsave) = ss.str();
+            }
+            else
+                WriteServLog("purestg2: ERROR: Can't find unit number for user \"%s\" (socket=%d).", ask.login, clientsocket);
+        }
 
         WriteServLog("purestg2: User %s (socket=%d) is connected.", ask.login, clientsocket);
 
@@ -550,10 +592,10 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
             reply.result = PUREPROTO_REPLY_ERROR;
             break;
         }
-
+        
         //unauthorize
         user->Unauthorize(this);
-
+        
         WriteServLog("purestg2: User %s (socket=%d) is disconnected.", ask.login, clientsocket);
 
         reply.result = PUREPROTO_REPLY_OK;
