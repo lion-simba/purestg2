@@ -51,11 +51,14 @@ char pppd_version[] = VERSION;
 
 static int keepalivetimeout = 60;
 static char authsocketpath[255];
+static int latedisconnect = 0;
 
 static option_t options[] = {
-    { "keepalivetimeout", o_int, &keepalivetimeout, "timeout of waiting for stargazer ALIVE packets (seconds)", OPT_LLIMIT, NULL, 0, 10},
+    { "keepalivetimeout", o_int, &keepalivetimeout, "Timeout of waiting for stargazer ALIVE packets (seconds)", OPT_LLIMIT, NULL, 0, 10},
     { "authsocket", o_string, authsocketpath, "Stargazer auth socket path",
       OPT_PRIV | OPT_STATIC, NULL, 254 },
+    { "latedisconnect", o_int, &latedisconnect, "If specified, user disconnect by Stargazer will be performed after ip-down script finished, before otherwise", 
+      OPT_NOARG | 1 },
     {  NULL }
 };
 
@@ -82,6 +85,9 @@ void user_on(void* opaque, int xz)
 
 void user_off(void* opaque, int xz)
 {
+    if (opaque && latedisconnect || !opaque && !latedisconnect)
+        return;
+    
     //if user, then ask stargazer to disable this user
     if (pureproto_disconnectuser(userlogin) == -1)
     {
@@ -349,6 +355,10 @@ int stg_phase(int phase)
 
         info("purestg2: ifunit set to %d.", req_unit);
     }
+    else if (phase == PHASE_DISCONNECT)
+    {
+        user_off(0, 0);
+    }
 }
 
 void plugin_init (void)
@@ -369,7 +379,7 @@ void plugin_init (void)
     allowed_address_hook = allowed_address;
 
     add_notifier(&auth_up_notifier, user_on, 0);
-    add_notifier(&link_down_notifier, user_off, 0);
+    add_notifier(&link_down_notifier, user_off, (void*)1);
 
     //start keepalive sequence
     timeout(&keep_alive, 0, keepalivetimeout, 0);

@@ -119,7 +119,13 @@ this plugin:
     plugin purestg2.so                  #required.
     authsocket /var/run/purestg2.sock   #required.
     keepalivetimeout 30                 #positive integer, optional, default is 60.
+    latedisconnect                      #optional.
 ------------>|-------------------------------
-authsocket is UNIX domain socket address.
-keepalivetimeout is the time between two sequential PING
+    'authsocket' is UNIX domain socket address.
+    'keepalivetimeout' is the time between two sequential PING
 packets from pppd plugin to Stargazer (see above).
+    If 'latedisconnect' option is NOT set, then user disconnect
+from Stargazer will perform BEFORE auth-down and ip-down scripts
+execution by pppd. If 'latedisconnect' option IS set, then user
+disconnect from Stargazer will perform AFTER auth-down and ip-down
+scripts finish.
