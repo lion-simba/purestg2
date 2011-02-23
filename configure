@@ -15079,12 +15079,39 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-for ac_header in pppd.h
+for ac_header in pppd.h fsm.h
 do :
-  ac_fn_c_check_header_mongrel "$LINENO" "pppd.h" "ac_cv_header_pppd_h" "$ac_includes_default"
-if test "x$ac_cv_header_pppd_h" = x""yes; then :
+  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
+ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
+eval as_val=\$$as_ac_Header
+   if test "x$as_val" = x""yes; then :
   cat >>confdefs.h <<_ACEOF
-#define HAVE_PPPD_H 1
+#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
+_ACEOF
+
+else
+
+    as_fn_error "header not found or not useable" "$LINENO" 5
+
+fi
+
+done
+
+
+for ac_header in ipcp.h
+do :
+  ac_fn_c_check_header_compile "$LINENO" "ipcp.h" "ac_cv_header_ipcp_h" "
+#ifdef HAVE_PPPD_H
+#include <pppd.h>
+#endif
+#ifdef HAVE_FSM_H
+#include <fsm.h>
+#endif
+
+"
+if test "x$ac_cv_header_ipcp_h" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_IPCP_H 1
 _ACEOF
 
 else

@@ -37,6 +37,8 @@
 //pppd.h defines version of pppd
 #undef VERSION
 #include <pppd.h>
+#include <fsm.h>
+#include <ipcp.h>
 
 #include <chap-new.h>
 #include <chap_ms.h>
@@ -50,12 +52,16 @@ char pppd_version[] = VERSION;
 /* parameters */
 
 static int keepalivetimeout = 60;
-static char authsocketpath[255];
+static char authsocketpath[MAXPATHLEN+1];
+static char predownscript[MAXPATHLEN+1] = "";
 
 static option_t options[] = {
-    { "keepalivetimeout", o_int, &keepalivetimeout, "timeout of waiting for stargazer ALIVE packets (seconds)", OPT_LLIMIT, NULL, 0, 10},
+    { "keepalivetimeout", o_int, &keepalivetimeout, "timeout of waiting for stargazer ALIVE packets (seconds)", 
+      OPT_LLIMIT, NULL, 0, 10},
     { "authsocket", o_string, authsocketpath, "Stargazer auth socket path",
-      OPT_PRIV | OPT_STATIC, NULL, 254 },
+      OPT_PRIV | OPT_STATIC | OPT_ULIMIT, NULL, MAXPATHLEN },
+    { "predownscript", o_string, predownscript, "Script to be run before link termination",
+      OPT_PRIV | OPT_STATIC | OPT_ULIMIT, NULL, MAXPATHLEN },
     {  NULL }
 };
 
@@ -82,6 +88,25 @@ void user_on(void* opaque, int xz)
 
 void user_off(void* opaque, int xz)
 {
+    char strspeed[32], strlocal[32], strremote[32];
+    char *argv[8];
+
+    slprintf(strspeed, sizeof(strspeed), "%d", baud_rate);
+    slprintf(strlocal, sizeof(strlocal), "%I", ipcp_gotoptions[0].ouraddr);
+    slprintf(strremote, sizeof(strremote), "%I", ipcp_hisoptions[0].hisaddr);
+
+    argv[0] = predownscript;
+    argv[1] = ifname;
+    argv[2] = devnam;
+    argv[3] = strspeed;
+    argv[4] = strlocal;
+    argv[5] = strremote;
+    argv[6] = ipparam;
+    argv[7] = NULL;
+    
+    //run and wait for pre-down script if it exists
+    run_program(predownscript, argv, 0, NULL, NULL, 1);
+    
     //if user, then ask stargazer to disable this user
     if (pureproto_disconnectuser(userlogin) == -1)
     {

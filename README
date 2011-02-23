@@ -119,7 +119,10 @@ this plugin:
     plugin purestg2.so                  #required.
     authsocket /var/run/purestg2.sock   #required.
     keepalivetimeout 30                 #positive integer, optional, default is 60.
+    predownscript /etc/ppp/ip-pre-down  #optional.
 ------------>|-------------------------------
-authsocket is UNIX domain socket address.
-keepalivetimeout is the time between two sequential PING
+    'authsocket' is UNIX domain socket address.
+    'keepalivetimeout' is the time between two sequential PING
 packets from pppd plugin to Stargazer (see above).
+    'predownscript' is synchronously executed just before
+disconnecting user from Stargazer.

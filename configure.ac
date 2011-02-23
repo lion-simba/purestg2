@@ -73,9 +73,22 @@ AC_CHECK_HEADERS([netinet/in.h stdlib.h string.h sys/socket.h unistd.h])
 CPPFLAGS="$CPPFLAGS -I$PPPINCS -I$STGINCS"
 
 AC_LANG([C])
-AC_CHECK_HEADERS([pppd.h], [], 
+AC_CHECK_HEADERS([pppd.h fsm.h], [], 
 [
     AC_MSG_ERROR(header not found or not useable)
+])
+
+AC_CHECK_HEADERS([ipcp.h], [],
+[
+    AC_MSG_ERROR(header not found or not useable)
+],
+[
+#ifdef HAVE_PPPD_H
+#include <pppd.h>
+#endif
+#ifdef HAVE_FSM_H
+#include <fsm.h>
+#endif
 ])
 
 AC_LANG([C++])
