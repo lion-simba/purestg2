@@ -1,3 +1,283 @@
+commit c82272f
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-03-03
+
+    Version bump to 2.1
+
+configure.ac
+
+commit ff49883
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-03-03
+
+    NEWS and README files updated
+
+NEWS
+README
+
+commit 0d00950
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-03-02
+
+    Author e-mail changed
+
+AUTHORS
+configure.ac
+include/pureproto.h
+pppd/pureclient.c
+pppd/pureclient.h
+pppd/purestg2.c
+stargazer/purestg2.cpp
+stargazer/purestg2.h
+
+commit d656dba
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-03-02
+
+    New pppd plugin option - preupscript
+
+NEWS
+README
+pppd/purestg2.c
+
+commit 4d3778f
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-03-02
+
+    Stargazer user connect moved from auth_up_notifier to ip_up_notifier
+
+pppd/purestg2.c
+
+commit 83fa261
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-23
+
+    New pppd plugin option: predownscript
+
+NEWS
+README
+config.h.in
+configure
+configure.ac
+pppd/purestg2.c
+
+commit 90f64f4
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-23
+
+    Revert "New 'latedisconnect' option is added to pppd plugin",
+    beacuse tests shown, that the option doesn't provide desired
+    effect.
+    
+    This reverts commit 81d5cd246089372fa0161cecb97fffcbd36f1f0a.
+
+NEWS
+README
+pppd/purestg2.c
+
+commit 81d5cd2
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-23
+
+    New 'latedisconnect' option is added to pppd plugin
+
+NEWS
+README
+pppd/purestg2.c
+
+commit ec02170
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-23
+
+    New Stargazer plugin option - 'pppunitsave' - to allow store ppp unit number upon user connection
+
+NEWS
+README
+stargazer/purestg2.cpp
+stargazer/purestg2.h
+
+commit 9137cd2
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-22
+
+    Documentation updated
+
+NEWS
+README
+
+commit 886fcbf
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-22
+
+    minor text message update
+
+stargazer/purestg2.cpp
+
+commit 4d6cf7b
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-22
+
+    Ability to kick previous session of a user, when a new one is connected.
+
+stargazer/purestg2.cpp
+stargazer/purestg2.h
+
+commit eab9c6a
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-22
+
+    Pthread CFLAGS and LDFLAGS added to pppd plugin
+
+pppd/Makefile.am
+pppd/Makefile.in
+
+commit 0474bb9
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-22
+
+    autoreconf
+
+Makefile.in
+aclocal.m4
+config.h.in
+configure
+pppd/Makefile.in
+stargazer/Makefile.in
+
+commit 12e9020
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-22
+
+    New file added.
+
+m4/ax_pthread.m4
+
+commit f02abca
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-19
+
+    Use kill(getpid(), SIGTERM) instead of die() for selfkilling
+
+pppd/purestg2.c
+
+commit 8093a83
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-22
+
+    Check for pthreads is added to configure.ac
+
+configure.ac
+
+commit 441209b
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-22
+
+    Terminate pppd on close socket.
+
+pppd/pureclient.c
+pppd/pureclient.h
+pppd/purestg2.c
+
+commit c45da64
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-22
+
+    Use kill(getpid(), SIGTERM) instead of die(1) for terminating if no PING reply from Stargazer was received.
+
+pppd/purestg2.c
+
+commit e563a56
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-19
+
+    AC_CHECK_FILES replaced by AC_CHECK_HEADERS for pppd and Stargazer
+    header files.
+
+config.h.in
+configure
+configure.ac
+
+commit c59a123
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-19
+
+    Don't pass NULL pointer to error()
+
+pppd/purestg2.c
+
+commit d4096e0
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-19
+
+    Option to use value from pppd's 'ipparam' to additionally
+    authenticate user.
+
+NEWS
+README
+pppd/pureclient.c
+pppd/purestg2.c
+stargazer/purestg2.cpp
+stargazer/purestg2.h
+
+commit 8191006
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-19
+
+    1. USER wasn't get for PUREPROTO_ASK_IPPARAM request.
+    2. Added some more debug output for ipparam.
+
+stargazer/purestg2.cpp
+
+commit 3806698
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-19
+
+    1. Ability to store ipparam from pppd to one of userdata USER fields.
+    2. Some more comments on parameters in README file.
+
+NEWS
+README
+include/pureproto.h
+pppd/pureclient.c
+pppd/pureclient.h
+pppd/purestg2.c
+stargazer/purestg2.cpp
+stargazer/purestg2.h
+
+commit 370f27c
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-17
+
+    C style malloc/realloc/free replaced by C++ style std::vector
+
+stargazer/purestg2.cpp
+stargazer/purestg2.h
+
+commit 2eff21d
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-15
+
+    Install libraries in ${libdir} instead of ${prefix}/usr/lib
+
+configure
+configure.ac
+
+commit 785cc39
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-15
+
+    README: overview updated
+
+README
+
+commit 058bedd
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-15
+
+    ChangeLog updated
+
+ChangeLog
+
 commit bfb3c79
 Author: Alexey Osipov <lion-simba@pridelands.ru>
 Date:   2011-02-15
