@@ -116,13 +116,17 @@ ppp interface unit number the user connected to in
 Here is an example chunk of pppd options file for using 
 this plugin:
 -----|<--------------------------------------
-    plugin purestg2.so                  #required.
-    authsocket /var/run/purestg2.sock   #required.
-    keepalivetimeout 30                 #positive integer, optional, default is 60.
-    predownscript /etc/ppp/ip-pre-down  #optional.
+    plugin purestg2.so                    #required.
+    authsocket /var/run/purestg2.sock     #required.
+    keepalivetimeout 30                   #positive integer, optional, default is 60.
+    predownscript /etc/ppp/pure-pre-down  #optional.
+    preupscript /etc/ppp/pure-pre-up      #optional.
 ------------>|-------------------------------
     'authsocket' is UNIX domain socket address.
     'keepalivetimeout' is the time between two sequential PING
 packets from pppd plugin to Stargazer (see above).
     'predownscript' is synchronously executed just before
-disconnecting user from Stargazer.
+disconnecting user from Stargazer. 'preupscript' is 
+synchronously executed just before connecting user 
+to Stargazer. Both scripts executed with parameters equal
+to '/etc/ppp/ip-up' script.

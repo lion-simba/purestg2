@@ -54,6 +54,7 @@ char pppd_version[] = VERSION;
 static int keepalivetimeout = 60;
 static char authsocketpath[MAXPATHLEN+1];
 static char predownscript[MAXPATHLEN+1] = "";
+static char preupscript[MAXPATHLEN+1] = "";
 
 static option_t options[] = {
     { "keepalivetimeout", o_int, &keepalivetimeout, "timeout of waiting for stargazer ALIVE packets (seconds)", 
@@ -61,6 +62,8 @@ static option_t options[] = {
     { "authsocket", o_string, authsocketpath, "Stargazer auth socket path",
       OPT_PRIV | OPT_STATIC | OPT_ULIMIT, NULL, MAXPATHLEN },
     { "predownscript", o_string, predownscript, "Script to be run before link termination",
+      OPT_PRIV | OPT_STATIC | OPT_ULIMIT, NULL, MAXPATHLEN },
+    { "preupscript", o_string, preupscript, "Script to be run before switching user on in Stargazer",
       OPT_PRIV | OPT_STATIC | OPT_ULIMIT, NULL, MAXPATHLEN },
     {  NULL }
 };
@@ -70,23 +73,10 @@ static option_t options[] = {
 static char userlogin[LOGIN_LEN+1];
 pthread_t socketwatch;
 
-/*
-    pppd hooks and notifiers
-*/
 
-void user_on(void* opaque, int xz)
-{
-    //ask stargazer to enable this user
-    if (pureproto_connectuser(userlogin) == -1)
-    {
-        error("purestg2: Can't connect user %s.", userlogin);
-        return;
-    }
+/* helper function */
 
-    info("purestg2: User %s connected.", userlogin);
-}
-
-void user_off(void* opaque, int xz)
+void run_script(char* script)
 {
     char strspeed[32], strlocal[32], strremote[32];
     char *argv[8];
@@ -104,8 +94,32 @@ void user_off(void* opaque, int xz)
     argv[6] = ipparam;
     argv[7] = NULL;
     
+    run_program(script, argv, 0, NULL, NULL, 1);
+}
+
+/*
+    pppd hooks and notifiers
+*/
+
+void user_on(void* opaque, int xz)
+{
+    //run and wait for pre-iup script if it exists
+    run_script(preupscript);
+    
+    //ask stargazer to enable this user
+    if (pureproto_connectuser(userlogin) == -1)
+    {
+        error("purestg2: Can't connect user %s.", userlogin);
+        return;
+    }
+
+    info("purestg2: User %s connected.", userlogin);
+}
+
+void user_off(void* opaque, int xz)
+{
     //run and wait for pre-down script if it exists
-    run_program(predownscript, argv, 0, NULL, NULL, 1);
+    run_script(predownscript);
     
     //if user, then ask stargazer to disable this user
     if (pureproto_disconnectuser(userlogin) == -1)

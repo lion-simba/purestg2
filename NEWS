@@ -1,6 +1,6 @@
 New in 2.1:
-* New PPPD plugin configuration option: 'predownscript'.
-  Check README for details.
+* New PPPD plugin configuration options: 'predownscript',
+  'preupscript'. Check README for details.
 * New Stargazer plugin configuration options: 'ipparamsave',
   'ipparamauth', 'allowemptyipparam', 'kickprevious',
   'pppunitsave'. Check README for details.
