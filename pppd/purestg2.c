@@ -393,7 +393,7 @@ void plugin_init (void)
     ip_choose_hook = choose_ip;
     allowed_address_hook = allowed_address;
 
-    add_notifier(&auth_up_notifier, user_on, 0);
+    add_notifier(&ip_up_notifier, user_on, 0);
     add_notifier(&link_down_notifier, user_off, 0);
 
     //start keepalive sequence
