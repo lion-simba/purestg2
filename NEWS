@@ -1,9 +1,16 @@
 New in 2.1:
+* User connect by Stargazer is now performed after IP has
+  been negotiated. Before now it was done after successful
+  authentication but before IP configuration.
 * New PPPD plugin configuration options: 'predownscript',
   'preupscript'. Check README for details.
 * New Stargazer plugin configuration options: 'ipparamsave',
   'ipparamauth', 'allowemptyipparam', 'kickprevious',
   'pppunitsave'. Check README for details.
+* More accurate checking of Stargazer and pppd header files
+  in 'configure' script.
+* Graceful pppd shutdown, when Stargazer not reply to PING
+  packets from pppd plugin.
 * Graceful pppd shutdown, when Stargazer exits.
 
 New in 2.0:

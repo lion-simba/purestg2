@@ -53,6 +53,33 @@ N seconds.
 When user disconnects, pppd plugin ask Stargazer to disconnect
 the user and then die.
 
+==== SCRIPT SEQUENCE ====
+
+On different stages pppd, pppd purestg plugin and Stargazer
+runs various scripts to handle site-specific tasks.
+
+Here is the sequence of those scripts called:
+
+-- Connection --
+1  (pppd)       /etc/ppp/auth-up
+2* (pppd)       /etc/ppp/ip-pre-up
+3* (purestg2)   'preupscript' (see below)
+4  (Stargazer)  OnConnect
+5  (pppd)       /etc/ppp/ip-up
+
+-- Disconnection (by will of a client) --
+1  (pppd)       /etc/ppp/ip-down
+2* (purestg2)   'predownscript' (see below)
+3  (Stargazer)  OnDisconnect
+4  (pppd)       /etc/ppp/auth-down
+
+If some script doesn't exists, it's not called and it's not an
+error.
+
+Scripts maked with '*' executes synchronously, i.e. they WAIT
+until script finished before proceed to the next stage. So pay
+attention that scripts 4 and 5 upon connection (3 and 4 upon 
+disconnection) may run simultaniously.
 
 ==== INSTALLATION ====
 See the INSTALL file and consider following:
