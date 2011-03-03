@@ -56,14 +56,36 @@ AX_PTHREAD(
 AC_ARG_WITH([pppd-headers],
     [AC_HELP_STRING([--with-pppd-headers],
         [where to look for pppd header files, defaults to /usr/include/pppd])],
-    [PPPINCS="$withval"],
+    [
+        case "$withval" in
+            /*)
+                # absolute path
+                ;;
+            *)
+                # relative path
+                AC_MSG_ERROR([Relative path to pppd header files is not allowed])
+                ;;
+        esac
+        PPPINCS="$withval"
+    ],
     [PPPINCS="/usr/include/pppd"])
 AC_SUBST([PPPINCS])
 
 AC_ARG_WITH([stg-headers],
     [AC_HELP_STRING([--with-stg-headers],
         [where to look for stargazer header files, defaults to /usr/include/stargazer])],
-    [STGINCS="$withval"],
+    [
+        case "$withval" in
+            /*)
+                # absolute path
+                ;;
+            *)
+                # relative path
+                AC_MSG_ERROR([Relative path to stargazer header files is not allowed])
+                ;;
+        esac
+        STGINCS="$withval"
+    ],
     [STGINCS="/usr/include/stargazer"])
 AC_SUBST([STGINCS])
 

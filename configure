@@ -15038,7 +15038,18 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 # Check whether --with-pppd-headers was given.
 if test "${with_pppd_headers+set}" = set; then :
-  withval=$with_pppd_headers; PPPINCS="$withval"
+  withval=$with_pppd_headers;
+        case "$withval" in
+            /*)
+                # absolute path
+                ;;
+            *)
+                # relative path
+                as_fn_error "Relative path to pppd header files is not allowed" "$LINENO" 5
+                ;;
+        esac
+        PPPINCS="$withval"
+
 else
   PPPINCS="/usr/include/pppd"
 fi
@@ -15048,7 +15059,18 @@ fi
 
 # Check whether --with-stg-headers was given.
 if test "${with_stg_headers+set}" = set; then :
-  withval=$with_stg_headers; STGINCS="$withval"
+  withval=$with_stg_headers;
+        case "$withval" in
+            /*)
+                # absolute path
+                ;;
+            *)
+                # relative path
+                as_fn_error "Relative path to stargazer header files is not allowed" "$LINENO" 5
+                ;;
+        esac
+        STGINCS="$withval"
+
 else
   STGINCS="/usr/include/stargazer"
 fi
