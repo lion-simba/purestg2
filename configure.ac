@@ -90,7 +90,11 @@ AC_ARG_WITH([stg-headers],
 AC_SUBST([STGINCS])
 
 # Checks for header files.
+AC_LANG([C])
 AC_CHECK_HEADERS([netinet/in.h stdlib.h string.h sys/socket.h unistd.h])
+
+AC_LANG([C++])
+AC_CHECK_HEADERS([cstdlib algorithm])
 
 CPPFLAGS="$CPPFLAGS -I$PPPINCS -I$STGINCS"
 
@@ -114,7 +118,7 @@ AC_CHECK_HEADERS([ipcp.h], [],
 ])
 
 AC_LANG([C++])
-AC_CHECK_HEADERS([stg_common.h user.h users.h stg_logger.h base_auth.h], [], 
+AC_CHECK_HEADERS([stg/stg_const.h stg/user.h stg/user_property.h stg/users.h stg/stg_logger.h stg/auth.h], [], 
 [
     AC_MSG_ERROR(headers not found or not useable)
 ])

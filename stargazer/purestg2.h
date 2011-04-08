@@ -30,18 +30,18 @@
 #include <vector>
 #include <pthread.h>
 #include <sys/poll.h>
-#include <base_auth.h>
-//#include "notifer.h"
-//#include "user_ips.h"
-#include <stg_logger.h>
-#include <users.h>
+
+#include <stg/auth.h>
+#include <stg/stg_logger.h>
+#include <stg/users.h>
+#include <stg/user_property.h>
 
 using namespace std;
 
-extern "C" BASE_PLUGIN * GetPlugin();
+extern "C" PLUGIN * GetPlugin();
 
 //-----------------------------------------------------------------------------
-class AUTH_PURESTG2 :public BASE_AUTH
+class AUTH_PURESTG2 :public AUTH
 {
 public:
     AUTH_PURESTG2();
@@ -51,7 +51,7 @@ public:
     void                SetTariffs(TARIFFS * t){};
     void                SetAdmins(ADMINS * a){};
     void                SetTraffcounter(TRAFFCOUNTER * tc){};
-    void                SetStore(BASE_STORE * ){};
+    void                SetStore(STORE * ){};
     void                SetStgSettings(const SETTINGS *){};
 
     int                 Start();

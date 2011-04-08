@@ -20,14 +20,17 @@
 
 #include <config.h>
 
-#include <stdio.h>
+#include <cstdlib>
+#include <algorithm>
+
 #include <unistd.h>
 #include <signal.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/un.h>
-#include <user.h>
+
+#include <stg/user.h>
 
 #include "purestg2.h"
 #include "pureproto.h"
@@ -52,7 +55,7 @@ public:
             delete dc;
     };
 
-    BASE_PLUGIN * GetPlugin()
+    PLUGIN * GetPlugin()
     {
         return dc;
     };
@@ -63,7 +66,7 @@ public:
 
 PURESTG2_CREATOR pstg2c;
 
-BASE_PLUGIN * GetPlugin()
+PLUGIN * GetPlugin()
 {
     return pstg2c.GetPlugin();
 }
@@ -502,10 +505,10 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
     case PUREPROTO_ASK_IP:
     case PUREPROTO_ASK_PING:
     case PUREPROTO_ASK_IPPARAM:
-        user_iter ui;
+        USER_PTR uptr;
 
-        if (users->FindByName(string(ask.login), &ui) == 0)
-            user = &(*ui);
+        if (users->FindByName(string(ask.login), &uptr) == 0)
+            user = uptr;
         else if (ask.type != PUREPROTO_ASK_PING)
             WriteServLog("purestg2: ERROR: user %s not found in stargazer.", ask.login);
 
@@ -558,7 +561,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
         }
 
         //authorize user
-        if (user->Authorize((user->property.ips.Get()[0]).ip, string("purestg"), 0xffffffff, this))
+        if (user->Authorize((user->GetProperty().ips.Get()[0]).ip, 0xffffffff, this))
         {
             WriteServLog("purestg2: ERROR: Can't authorize user %s.", ask.login);
             reply.result = PUREPROTO_REPLY_ERROR;
@@ -628,7 +631,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
         }
 
         //get user passwd
-        strncpy(reply.passwd, user->property.password.Get().c_str(), PASSWD_LEN);
+        strncpy(reply.passwd, user->GetProperty().password.Get().c_str(), PASSWD_LEN);
 
         reply.result = PUREPROTO_REPLY_OK;
         break;
@@ -642,7 +645,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
         }
 
         //get user ip
-        reply.userip.s_addr = (user->property.ips.Get()[0]).ip;
+        reply.userip.s_addr = (user->GetProperty().ips.Get()[0]).ip;
 
         reply.result = PUREPROTO_REPLY_OK;
         break;
@@ -740,7 +743,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
 //-----------------------------------------------------------------------------
 #define USERDATACASECONDITION(_num) \
     case _num: \
-        return user->property.userdata##_num;
+        return user->GetProperty().userdata##_num;
 USER_PROPERTY<string>&  AUTH_PURESTG2::getUserData(USER* user, int dataNum)
 {
     switch (dataNum)
@@ -757,7 +760,7 @@ USER_PROPERTY<string>&  AUTH_PURESTG2::getUserData(USER* user, int dataNum)
         USERDATACASECONDITION(9)
         default:
             WriteServLog("purestg2: BUG: incorrect userdata index: %d", dataNum);
-            return user->property.userdata0;
+            return user->GetProperty().userdata0;
     }
 }
 //-----------------------------------------------------------------------------

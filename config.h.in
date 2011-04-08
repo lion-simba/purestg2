@@ -6,8 +6,11 @@
 /* Define if you are using FreeBSD5 or greater */
 #undef FREE_BSD5
 
-/* Define to 1 if you have the <base_auth.h> header file. */
-#undef HAVE_BASE_AUTH_H
+/* Define to 1 if you have the <algorithm> header file. */
+#undef HAVE_ALGORITHM
+
+/* Define to 1 if you have the <cstdlib> header file. */
+#undef HAVE_CSTDLIB
 
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
@@ -51,11 +54,23 @@
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
 
-/* Define to 1 if you have the <stg_common.h> header file. */
-#undef HAVE_STG_COMMON_H
+/* Define to 1 if you have the <stg/auth.h> header file. */
+#undef HAVE_STG_AUTH_H
 
-/* Define to 1 if you have the <stg_logger.h> header file. */
-#undef HAVE_STG_LOGGER_H
+/* Define to 1 if you have the <stg/stg_const.h> header file. */
+#undef HAVE_STG_STG_CONST_H
+
+/* Define to 1 if you have the <stg/stg_logger.h> header file. */
+#undef HAVE_STG_STG_LOGGER_H
+
+/* Define to 1 if you have the <stg/users.h> header file. */
+#undef HAVE_STG_USERS_H
+
+/* Define to 1 if you have the <stg/user.h> header file. */
+#undef HAVE_STG_USER_H
+
+/* Define to 1 if you have the <stg/user_property.h> header file. */
+#undef HAVE_STG_USER_PROPERTY_H
 
 /* Define to 1 if you have the `strerror' function. */
 #undef HAVE_STRERROR
@@ -80,12 +95,6 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
-
-/* Define to 1 if you have the <users.h> header file. */
-#undef HAVE_USERS_H
-
-/* Define to 1 if you have the <user.h> header file. */
-#undef HAVE_USER_H
 
 /* Define to 1 if the system has the type `_Bool'. */
 #undef HAVE__BOOL

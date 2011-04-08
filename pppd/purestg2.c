@@ -43,7 +43,8 @@
 #include <chap-new.h>
 #include <chap_ms.h>
 #include <md5.h>
-#include <stg_common.h>
+
+#include <stg/stg_const.h>
 
 #include "pureclient.h"
 
