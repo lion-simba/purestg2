@@ -118,7 +118,7 @@ AC_CHECK_HEADERS([ipcp.h], [],
 ])
 
 AC_LANG([C++])
-AC_CHECK_HEADERS([stg/stg_const.h stg/user.h stg/user_property.h stg/users.h stg/stg_logger.h stg/auth.h stg/noncopyable.h], [], 
+AC_CHECK_HEADERS([stg/const.h stg/user.h stg/user_property.h stg/users.h stg/logger.h stg/auth.h stg/noncopyable.h], [], 
 [
     AC_MSG_ERROR(headers not found or not useable)
 ])

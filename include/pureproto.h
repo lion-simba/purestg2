@@ -24,7 +24,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#include <stg/stg_const.h>
+#include <stg/const.h>
 
 // ask types
 

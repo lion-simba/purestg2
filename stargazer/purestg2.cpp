@@ -31,7 +31,6 @@
 #include <sys/un.h>
 
 #include <stg/user.h>
-#include <stg/noncopyable.h>
 
 #include "purestg2.h"
 #include "pureproto.h"
@@ -61,28 +60,30 @@ public:
         return dc;
     };
 };
+
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 
-class CONNECTED_NOTIFIER: public PROPERTY_NOTIFIER_BASE<bool>,
-                       private NONCOPYABLE
+PURESTG2_CREATOR pstg2c;
+
+PLUGIN * GetPlugin()
 {
-public:
-    static CONNECTED_NOTIFIER * Create(AUTH_PURESTG2 * auth, USER * user);
-    void Notify(const bool & oldVal, const bool & newVal);
-        
-private:
-    CONNECTED_NOTIFIER(AUTH_PURESTG2 * a, USER * u);
-    ~CONNECTED_NOTIFIER();
+    return pstg2c.GetPlugin();
+}
 
-    USER * user;
-    AUTH_PURESTG2 * auth;
 
-#ifdef CONNECTED_NOTIFIER_DEBUG    
-    static int notifiers_count;
-#endif
-};
+void splitstring(const string &s, char delim, vector<string>& elems)
+{
+    stringstream ss(s);
+    string item;
+    while(getline(ss, item, delim))
+        elems.push_back(item);
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 #ifdef CONNECTED_NOTIFIER_DEBUG    
 int CONNECTED_NOTIFIER::notifiers_count = 0;
@@ -113,33 +114,8 @@ GetStgLogger()("CONNECTED_NOTIFIER destroyed (%d)", notifiers_count);
 
 void CONNECTED_NOTIFIER::Notify(const bool &, const bool &)
 {
-    if (auth->CheckSocket(user))
-    {
-        user->DelConnectedAfterNotifier(this);
-        delete this; //self destruction :)
-    }
+    auth->clientDisconnectByStg(user); // <- this object will be destroyed inside of this call !!!
 }
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-
-PURESTG2_CREATOR pstg2c;
-
-PLUGIN * GetPlugin()
-{
-    return pstg2c.GetPlugin();
-}
-
-
-void splitstring(const string &s, char delim, vector<string>& elems)
-{
-    stringstream ss(s);
-    string item;
-    while(getline(ss, item, delim))
-        elems.push_back(item);
-}
-                            
 
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
@@ -370,7 +346,6 @@ int AUTH_PURESTG2::Stop()
 
     //shutdown server
     delConnection(listeningsocket);
-    shutdown(listeningsocket, SHUT_RDWR);
     close(listeningsocket);
 
     return 0;
@@ -430,10 +405,9 @@ void* AUTH_PURESTG2::Run(void * me)
                 auth->WriteServLog("purestg2: BUG: Our listening socket is running away!");
             else
             {
-                if (auth->delConnection(*socket) < 0)
-                    auth->WriteServLog("purestg2: BUG: Can't del hupped connection!");
-
-                close(*socket);
+                int ret;
+                if ((ret = auth->hupClientConnection(*socket)) < 0)
+                    auth->WriteServLog("purestg2: ERROR: Can't hup client connection %d (ret=%d)", *socket, ret);
             }
         }
     }
@@ -475,17 +449,6 @@ int AUTH_PURESTG2::addConnection(int socket)
 //-----------------------------------------------------------------------------
 int AUTH_PURESTG2::delConnection(int socket)
 {
-    //remove socket from usersockets map
-    for(map<int, int>::iterator iter = usersockets.begin(); iter != usersockets.end(); ++iter)
-    {
-        if (iter->second == socket)
-        {
-            usersockets.erase(iter);
-            break;
-        }
-    }
-
-    //remove connection
     vector<struct pollfd>::iterator todel;
     for (todel = connections.begin(); todel != connections.end(); ++todel)
     {
@@ -494,22 +457,39 @@ int AUTH_PURESTG2::delConnection(int socket)
     }
 
     if (todel == connections.end())
+    {
+        WriteServLog("purestg2: Can't find connection for socket %d", socket);
         return -1;
+    }
 
     connections.erase(todel);
+
+    return 0;
+}
+//-----------------------------------------------------------------------------
+int AUTH_PURESTG2::finishClientConnection(int socket)
+{
+    //remove socket from usersockets map
+    USER_PTR user = getUserBySocket(socket);
+    if (user)
+        usersockets.erase(user->GetID());
+    else
+        WriteServLog("purestg2: BUG: Can't find user for socket %d", socket);
+
+    //remove connection
+    int ret;
+    if ((ret = delConnection(socket)) < 0)
+        WriteServLog("purestg2: BUG: delConnection for socket %d failed: %d", socket, ret);
     
     //free unit holded by this socket
-    vector<int>::iterator unit;
-    for(unit = busyunits.begin(); unit != busyunits.end(); ++unit)
-    {
-        if (*unit == socket)
-            break;
-    }
+    int unit = getUnitBySocket(socket);
+    if (unit >= 0)
+        busyunits[unit] = -1;
+    else
+        WriteServLog("purestg2: BUG: Can't find unit for socket %d", socket);
     
-    if (unit == busyunits.end())
-        return -2;
-        
-    *unit = -1;
+    //close socket
+    close(socket);
     
     return 0;
 }
@@ -534,6 +514,30 @@ int AUTH_PURESTG2::acceptClientConnection()
 
     WriteServLog("purestg2: Accepted new client connection (socket=%d)", clientsocket);
 
+    return 0;
+}
+//-----------------------------------------------------------------------------
+int AUTH_PURESTG2::hupClientConnection(int clientsocket)
+{
+    USER_PTR user = getUserBySocket(clientsocket);
+    
+    int ret;
+    if ((ret = finishClientConnection(clientsocket)) < 0)
+        WriteServLog("purestg2: BUG: Can't finish hupped connection for socket %d (ret=%d)", clientsocket, ret);
+    
+    //if this was unexpected socket termination, unauthorize user
+    if (user)
+    {
+        if (user->IsAuthorizedBy(this))
+        {
+            WriteServLog("purestg2: User %s is still authorized, unauthorizing...", user->GetLogin().c_str());
+            deactivateNotifier(user);
+            user->Unauthorize(this);
+        }
+    }
+    else
+        WriteServLog("purestg2: BUG: Can't find user for socket %d", clientsocket);
+        
     return 0;
 }
 //-----------------------------------------------------------------------------
@@ -606,10 +610,10 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
                 }
                 int oldsocket = iter->second;
                 WriteServLog("purestg2: Terminating previous session (oldsocket=%d) for user \"%s\"", oldsocket, ask.login);
+                deactivateNotifier(user);
                 user->Unauthorize(this);
-                if (delConnection(oldsocket) < 0)
-                    WriteServLog("purestg2: BUG: can't delConnection for oldsocket=%d for user \"%s\"", oldsocket, ask.login);
-                close(oldsocket);
+                if (finishClientConnection(oldsocket) < 0)
+                    WriteServLog("purestg2: BUG: can't finishClientConnection for oldsocket=%d for user \"%s\"", oldsocket, ask.login);                
                 
                 //TODO: wait for old pppd really finish somehow.
             }
@@ -645,7 +649,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
         }
 
         //create notifier on user connected state change for handling user's disconnect by STG
-        user->AddConnectedAfterNotifier(CONNECTED_NOTIFIER::Create(this, user));
+        activateNotifier(user);
 
         WriteServLog("purestg2: User %s (socket=%d) is connected.", ask.login, clientsocket);
 
@@ -661,6 +665,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
         }
         
         //unauthorize
+        deactivateNotifier(user);
         user->Unauthorize(this);
         
         WriteServLog("purestg2: User %s (socket=%d) is disconnected.", ask.login, clientsocket);
@@ -828,23 +833,82 @@ USER_PROPERTY<string>&  AUTH_PURESTG2::getUserData(USER* user, int dataNum)
     }
 }
 //-----------------------------------------------------------------------------
-bool AUTH_PURESTG2::CheckSocket(USER * user)
+USER_PTR AUTH_PURESTG2::getUserBySocket(int socket)
 {
-    if (user->GetConnected())
-        return false; //all is OK, nothing to do
+    USER_PTR user = NULL;
+    
+    map<int, int>::iterator iter;
+    for(iter = usersockets.begin(); iter != usersockets.end(); ++iter)
+        if (iter->second == socket)
+            break;
+     
+    if (iter != usersockets.end())
+    {
+        int hSearch = users->OpenSearch();
+        USER_PTR cu = NULL;
+        while(users->SearchNext(hSearch, &cu) == 0)
+            if (cu->GetID() == iter->first)
+            {
+                user = cu;
+                break;
+            }
+        users->CloseSearch(hSearch);
+    }
+    
+    return user;
+}
+//-----------------------------------------------------------------------------
+int AUTH_PURESTG2::getUnitBySocket(int socket)
+{
+    int unit = minppp;
+    vector<int>::iterator iter;
+    for(iter = busyunits.begin(); iter != busyunits.end(); ++iter)
+    {
+        if (*iter == socket)
+            break;
+        unit++;
+    }
+    
+    if (iter == busyunits.end())
+        return -1;
         
+    return unit;
+}
+//-----------------------------------------------------------------------------
+int AUTH_PURESTG2::clientDisconnectByStg(USER * user)
+{        
     int socket = usersockets[user->GetID()];
             
     WriteServLog("purestg2: User \"%s\" is disconnected by stargazer. Closing auth socket %d.", user->GetLogin().c_str(), socket);
     
     user->Unauthorize(this);
     
-    if (delConnection(socket) < 0)
+    if (finishClientConnection(socket) < 0)
         WriteServLog("purestg2: BUG: Can't del connection socket %d!", socket);
     
-    shutdown(socket, SHUT_RDWR);
-    close(socket);
+    deactivateNotifier(user);
     
-    return true;
+    return 0;
+}
+//-----------------------------------------------------------------------------
+void AUTH_PURESTG2::activateNotifier(USER* user)
+{
+    CONNECTED_NOTIFIER* cn = CONNECTED_NOTIFIER::Create(this, user);
+    notifiers[user->GetID()] = cn;
+    user->AddConnectedAfterNotifier(cn);
+}
+//-----------------------------------------------------------------------------
+void AUTH_PURESTG2::deactivateNotifier(USER* user)
+{
+    int uid = user->GetID();
+    map<int, CONNECTED_NOTIFIER*>::iterator iter = notifiers.find(uid);
+    if (iter == notifiers.end())
+    {
+        WriteServLog("purestg2: BUG: attempt to deactivate not activated notifier for user id %d", uid);
+        return;
+    }
+    user->DelConnectedAfterNotifier(iter->second);
+    notifiers.erase(iter);
+    delete iter->second;
 }
 //-----------------------------------------------------------------------------

@@ -44,7 +44,7 @@
 #include <chap_ms.h>
 #include <md5.h>
 
-#include <stg/stg_const.h>
+#include <stg/const.h>
 
 #include "pureclient.h"
 

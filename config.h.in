@@ -57,14 +57,14 @@
 /* Define to 1 if you have the <stg/auth.h> header file. */
 #undef HAVE_STG_AUTH_H
 
+/* Define to 1 if you have the <stg/const.h> header file. */
+#undef HAVE_STG_CONST_H
+
+/* Define to 1 if you have the <stg/logger.h> header file. */
+#undef HAVE_STG_LOGGER_H
+
 /* Define to 1 if you have the <stg/noncopyable.h> header file. */
 #undef HAVE_STG_NONCOPYABLE_H
-
-/* Define to 1 if you have the <stg/stg_const.h> header file. */
-#undef HAVE_STG_STG_CONST_H
-
-/* Define to 1 if you have the <stg/stg_logger.h> header file. */
-#undef HAVE_STG_STG_LOGGER_H
 
 /* Define to 1 if you have the <stg/users.h> header file. */
 #undef HAVE_STG_USERS_H

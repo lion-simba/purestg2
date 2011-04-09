@@ -32,17 +32,45 @@
 #include <sys/poll.h>
 
 #include <stg/auth.h>
-#include <stg/stg_logger.h>
+#include <stg/logger.h>
 #include <stg/users.h>
 #include <stg/user_property.h>
+#include <stg/noncopyable.h>
 
 using namespace std;
 
 extern "C" PLUGIN * GetPlugin();
 
 //-----------------------------------------------------------------------------
-class AUTH_PURESTG2 :public AUTH
+
+class AUTH_PURESTG2;
+
+class CONNECTED_NOTIFIER: public PROPERTY_NOTIFIER_BASE<bool>,
+                       private NONCOPYABLE
 {
+public:
+    static CONNECTED_NOTIFIER * Create(AUTH_PURESTG2 * auth, USER * user);
+    void Notify(const bool & oldVal, const bool & newVal);
+    
+    ~CONNECTED_NOTIFIER();
+        
+private:
+    CONNECTED_NOTIFIER(AUTH_PURESTG2 * a, USER * u);    
+
+    USER * user;
+    AUTH_PURESTG2 * auth;
+
+#ifdef CONNECTED_NOTIFIER_DEBUG    
+    static int notifiers_count;
+#endif
+};
+
+//-----------------------------------------------------------------------------
+
+class AUTH_PURESTG2: public AUTH
+{
+    friend class CONNECTED_NOTIFIER;
+    
 public:
     AUTH_PURESTG2();
     virtual ~AUTH_PURESTG2();
@@ -66,50 +94,60 @@ public:
     uint16_t            GetStopPosition() const;
 
     int                 SendMessage(const STG_MSG & msg, uint32_t ip) const;
-    
-public:
-    bool                CheckSocket(USER * user); //check if user identified by user_id is IsInetable(), and if not - close the socket and return true
 
 private:
-    static void*            Run(void * me);
+    static void*            Run(void * me); // main loop
     
     STG_LOGGER&             WriteServLog;
     
+    // worker functions (they got mutex during work)
+    int                     acceptClientConnection();
+    int                     handleClientConnection(int clientsocket);
+    int                     hupClientConnection(int clientsocket);
+    int                     clientDisconnectByStg(USER * user);
+    // ---------------------------------------------
+    
+    // helper functions (they don't got mutexes and should be called 
+    // only from worker functions)
     int                     addConnection(int socket);
     int                     delConnection(int socket);
     
-    int                     acceptClientConnection();
-    int                     handleClientConnection(int clientsocket);
+    int                     finishClientConnection(int socket);
     
-    USER_PROPERTY<string>&  getUserData(USER* user, int dataNum);
+    void                    activateNotifier(USER* user);
+    void                    deactivateNotifier(USER* user);
+    
+    USER_PROPERTY<string>&  getUserData(USER* user, int dataNum);    
+    USER_PTR                getUserBySocket(int socket);
+    int                     getUnitBySocket(int socket);
+    // --------------------------------------------------------------
     
 private:
     mutable string          errorStr;
     bool                    isRunning;          //running or not in fact
     bool                    nonstop;            //must run or mustn't
-    string                  authsocketpath;
+    
     int                     listeningsocket;
     pthread_t               listeningthread;
-    
-    vector<struct pollfd>   connections;        //connections[0] is for listeningsocket
-    map<int, int>           usersockets;        //maps userid to socket it is using
-    
-    vector<int>             busyunits;          //busyunits[unitnum-minppp] = socket_id which holds unitnum or -1 if unitnum is free
-    int                     minppp;
-    
-    int                     d;
-    
-    int                     unitsave;           //the userdata number to save PPP unit number to
-    
-    int                     ipparamsave;        //the userdata number to save ipparam to
-    int                     ipparamauth;        //the userdata number to check ipparam against
-    bool                    allowemptyipparam;
-    
-    bool                    kickprevious;
     
     MODULE_SETTINGS         settings;
     USERS*                  users;
     
+    //main variables
+    vector<struct pollfd>          connections; //connections[0] is for listeningsocket
+    map<int, int>                  usersockets; //maps userid to socket it is using    
+    vector<int>                    busyunits;   //busyunits[unitnum-minppp] = socket_id which holds unitnum or -1 if unitnum is free
+    map<int, CONNECTED_NOTIFIER*>  notifiers;   //connected notifier for user id
+    
+    //properties
+    string                  authsocketpath;
+    int                     minppp;    
+    int                     d;
+    int                     unitsave;           //the userdata number to save PPP unit number to    
+    int                     ipparamsave;        //the userdata number to save ipparam to
+    int                     ipparamauth;        //the userdata number to check ipparam against
+    bool                    allowemptyipparam;    
+    bool                    kickprevious;
 };
 //-----------------------------------------------------------------------------
 
