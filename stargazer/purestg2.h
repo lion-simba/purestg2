@@ -28,6 +28,7 @@
 #include <string>
 #include <map>
 #include <vector>
+#include <queue>
 #include <pthread.h>
 #include <sys/poll.h>
 
@@ -105,6 +106,7 @@ private:
     int                     handleClientConnection(int clientsocket);
     int                     hupClientConnection(int clientsocket);
     int                     clientDisconnectByStg(USER * user);
+    int                     checkUserTimeouts();
     // ---------------------------------------------
     
     // helper functions (they don't got mutexes and should be called 
@@ -120,6 +122,8 @@ private:
     USER_PROPERTY<string>&  getUserData(USER* user, int dataNum);    
     USER_PTR                getUserBySocket(int socket);
     int                     getUnitBySocket(int socket);
+    
+    int                     updateUserWatchdog(USER* user);
     // --------------------------------------------------------------
     
 private:
@@ -139,6 +143,9 @@ private:
     vector<int>                    busyunits;   //busyunits[unitnum-minppp] = socket_id which holds unitnum or -1 if unitnum is free
     map<int, CONNECTED_NOTIFIER*>  notifiers;   //connected notifier for user id
     
+    queue< pair<USER_PTR, time_t> >     userswds;    //users watchdogs
+    map<USER_PTR, time_t>               userstos;    //users timeouts (most later watchdog time)
+    
     //main variables mutex
     pthread_mutex_t         mutex;
     
@@ -151,6 +158,7 @@ private:
     int                     ipparamauth;        //the userdata number to check ipparam against
     bool                    allowemptyipparam;    
     bool                    kickprevious;
+    int                     pppdtimeout;        //timeout to kill connection if no PINGs received
 };
 //-----------------------------------------------------------------------------
 

@@ -91,7 +91,7 @@ AC_SUBST([STGINCS])
 
 # Checks for header files.
 AC_LANG([C])
-AC_CHECK_HEADERS([netinet/in.h stdlib.h string.h sys/socket.h unistd.h])
+AC_CHECK_HEADERS([netinet/in.h stdlib.h string.h sys/socket.h unistd.h sys/time.h])
 
 AC_LANG([C++])
 AC_CHECK_HEADERS([cstdlib algorithm])
