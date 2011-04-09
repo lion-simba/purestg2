@@ -31,6 +31,7 @@
 #include <sys/un.h>
 
 #include <stg/user.h>
+#include <stg/locker.h>
 
 #include "purestg2.h"
 #include "pureproto.h"
@@ -136,11 +137,13 @@ AUTH_PURESTG2::AUTH_PURESTG2()
     allowemptyipparam = false;
     kickprevious = false;
     unitsave = -1;
+    
+    pthread_mutex_init(&mutex, NULL);
 }
 //-----------------------------------------------------------------------------
 AUTH_PURESTG2::~AUTH_PURESTG2()
 {
-
+    pthread_mutex_destroy(&mutex);
 }
 //-----------------------------------------------------------------------------
 void AUTH_PURESTG2::SetUsers(USERS * u)
@@ -496,6 +499,8 @@ int AUTH_PURESTG2::finishClientConnection(int socket)
 //-----------------------------------------------------------------------------
 int AUTH_PURESTG2::acceptClientConnection()
 {
+    STG_LOCKER(&mutex, __FILE__, __LINE__);
+    
     int clientsocket;
 
     clientsocket = accept(listeningsocket, NULL, NULL);
@@ -519,6 +524,8 @@ int AUTH_PURESTG2::acceptClientConnection()
 //-----------------------------------------------------------------------------
 int AUTH_PURESTG2::hupClientConnection(int clientsocket)
 {
+    STG_LOCKER(&mutex, __FILE__, __LINE__);
+    
     USER_PTR user = getUserBySocket(clientsocket);
     
     int ret;
@@ -543,6 +550,8 @@ int AUTH_PURESTG2::hupClientConnection(int clientsocket)
 //-----------------------------------------------------------------------------
 int AUTH_PURESTG2::handleClientConnection(int clientsocket)
 {
+    STG_LOCKER(&mutex, __FILE__, __LINE__);
+    
     struct pureproto_packet_ask ask;
 
     int result = recv(clientsocket, &ask, sizeof(ask), MSG_WAITALL);
@@ -876,7 +885,9 @@ int AUTH_PURESTG2::getUnitBySocket(int socket)
 }
 //-----------------------------------------------------------------------------
 int AUTH_PURESTG2::clientDisconnectByStg(USER * user)
-{        
+{
+    STG_LOCKER(&mutex, __FILE__, __LINE__);
+    
     int socket = usersockets[user->GetID()];
             
     WriteServLog("purestg2: User \"%s\" is disconnected by stargazer. Closing auth socket %d.", user->GetLogin().c_str(), socket);

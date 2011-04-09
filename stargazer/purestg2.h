@@ -139,6 +139,9 @@ private:
     vector<int>                    busyunits;   //busyunits[unitnum-minppp] = socket_id which holds unitnum or -1 if unitnum is free
     map<int, CONNECTED_NOTIFIER*>  notifiers;   //connected notifier for user id
     
+    //main variables mutex
+    pthread_mutex_t         mutex;
+    
     //properties
     string                  authsocketpath;
     int                     minppp;    

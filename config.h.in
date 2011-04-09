@@ -60,6 +60,9 @@
 /* Define to 1 if you have the <stg/const.h> header file. */
 #undef HAVE_STG_CONST_H
 
+/* Define to 1 if you have the <stg/locker.h> header file. */
+#undef HAVE_STG_LOCKER_H
+
 /* Define to 1 if you have the <stg/logger.h> header file. */
 #undef HAVE_STG_LOGGER_H
 
