@@ -1003,7 +1003,7 @@ int AUTH_PURESTG2::updateUserWatchdog(USER* user)
     userstos[user] = watchtime;
     userswds.push(pair<USER_PTR, time_t>(user, watchtime));
     if (d)
-        WriteServLog("purestg2: Watchdog timer for user\"%s\" submitted on %d", user->GetLogin().c_str(), watchtime);
+        WriteServLog("purestg2: Watchdog timer for user \"%s\" submitted on %d", user->GetLogin().c_str(), watchtime);
     
     return 0;
 }
