@@ -113,6 +113,7 @@ using this plugin:
         allowemptyipparam                       #boolean, optional, require 'ipparamauth' option.
         kickprevious                            #boolean, optional.
         pppunitsave = 5                         #integer from 0 to 9, must not equal to ipparamauth and ipparamsave, optional, no default.
+        debug                                   #boolean, optional.
     </Module>
 ------------>|-------------------------------
     'authsocket' is UNIX domain socket address.
@@ -139,6 +140,8 @@ the new connection will succeed.
     If 'pppunitsave' option is set, then Stargazer saves
 ppp interface unit number the user connected to in 
 'userdata<pppunitsave>' user field on user connect.
+    'debug' option enables purestg2 debug output to
+general Stargazer's logfile.
 
 Here is an example chunk of pppd options file for using 
 this plugin:
