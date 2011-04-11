@@ -102,6 +102,36 @@ void run_script(char* script)
     pppd hooks and notifiers
 */
 
+void keep_alive(void* opaque)
+{
+    int result;
+    dbglog("purestg2: keepalive started.");
+
+    result = pureproto_ping(keepalivetimeout, userlogin);
+    if (result < 0)
+    {
+        if (result == -2)
+        {
+            error("purestg2: Error reply on ping command, disconnect and exiting.");
+            pureproto_disconnectuser(userlogin);
+            pureproto_disconnect();
+        }
+        else
+            error("purestg2: No ping from stargazer, exiting.");
+
+        if (kill(getpid(), SIGTERM) == -1)
+        {
+            error("purestg2: Can't gracefully kill myself, will die.");
+            die(1);
+        }
+        return;
+    }
+
+    dbglog("purestg2: keepalive succedded.");
+
+    timeout(&keep_alive, 0, keepalivetimeout, 0);
+}
+
 void user_on(void* opaque, int xz)
 {
     //run and wait for pre-iup script if it exists
@@ -113,6 +143,9 @@ void user_on(void* opaque, int xz)
         error("purestg2: Can't connect user %s.", userlogin);
         return;
     }
+
+    //start keepalive sequence
+    timeout(&keep_alive, 0, keepalivetimeout, 0);
 
     info("purestg2: User %s connected.", userlogin);
 }
@@ -305,35 +338,7 @@ int allowed_address (u_int32_t addr)
     }
 }
 
-void keep_alive(void* opaque)
-{
-    int result;
-    dbglog("purestg2: keepalive started.");
 
-    result = pureproto_ping(keepalivetimeout, userlogin);
-    if (result < 0)
-    {
-        if (result == -2)
-        {
-            error("purestg2: Error reply on ping command, disconnect and exiting.");
-            pureproto_disconnectuser(userlogin);
-            pureproto_disconnect();
-        }
-        else
-            error("purestg2: No ping from stargazer, exiting.");
-
-        if (kill(getpid(), SIGTERM) == -1)
-        {
-            error("purestg2: Can't gracefully kill myself, will die.");
-            die(1);
-        }
-        return;
-    }
-
-    dbglog("purestg2: keepalive succedded.");
-
-    timeout(&keep_alive, 0, keepalivetimeout, 0);
-}
 
 void* socketwatch_thread(void* arg)
 {
@@ -364,6 +369,16 @@ int stg_phase(int phase)
 {
     if (phase == PHASE_SERIALCONN)
     {
+        if (debug)
+        {
+            info("purestg2: parameters values:");
+            info("purestg2: keepalivetimeout = %d", keepalivetimeout);
+            info("purestg2: authsocket = %s", authsocketpath);
+            info("purestg2: predownscript = %s", predownscript);
+            info("purestg2: preupscript = %s", preupscript);
+            info("purestg2: ------------------");
+        }
+
         if (pureproto_connect(authsocketpath) == -1)
         {
             error("purestg2: Can't connect to stargazer's socket %s. Exiting.", authsocketpath);
@@ -378,8 +393,6 @@ int stg_phase(int phase)
         }
 
         info("purestg2: Connected to stargazer via %s.", authsocketpath);
-
-
 
         if (pureproto_getifunit(&req_unit) == -1)
         {
@@ -411,8 +424,7 @@ void plugin_init (void)
     add_notifier(&ip_up_notifier, user_on, 0);
     add_notifier(&link_down_notifier, user_off, 0);
 
-    //start keepalive sequence
-    timeout(&keep_alive, 0, keepalivetimeout, 0);
-
     info("Stargazer (%s) auth plugin initialized.", PACKAGE_STRING);
+    if (debug)
+        info("purestg2: debug is enabled.");
 }
