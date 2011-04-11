@@ -101,7 +101,7 @@ private:
     
     STG_LOGGER&             WriteServLog;
     
-    // worker functions (they got mutex during work)
+    // worker (main) functions
     int                     acceptClientConnection();
     int                     handleClientConnection(int clientsocket);
     int                     hupClientConnection(int clientsocket);
@@ -109,8 +109,7 @@ private:
     int                     checkUserTimeouts();
     // ---------------------------------------------
     
-    // helper functions (they don't got mutexes and should be called 
-    // only from worker functions)
+    // helper functions
     int                     addConnection(int socket);
     int                     delConnection(int socket);
     
