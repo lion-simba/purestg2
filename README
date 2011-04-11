@@ -45,13 +45,11 @@ pppd will die and connection will be terminated. If Stargazer
 responds with "User is no more allowed to access" the pppd will die
 and connection will be terminated.
 
-NOTE:
-Because of N seconds timeout, the actual connection termination
-by the will of Stargazer will be done in time interval from 0 to
-N seconds.
-
 When user disconnects, pppd plugin ask Stargazer to disconnect
 the user and then die.
+
+If Stargazer disconnect a user for no money or other reasons,
+the user's pppd will be automatically terminated.
 
 ==== SCRIPT SEQUENCE ====
 
@@ -88,7 +86,7 @@ Stargazer and pppd header files are required to compile. The
 default location of pppd headers is /usr/include/pppd. You
 can change this by passing --with-pppd-headers=<path> option
 to configure script. The default location of Stargazer headers
-is /usr/include/stargazer. You can change this by passing
+is /usr/include/stg. You can change this by passing
 --with-stg-headers=<path> option to configure script.
 
 The Stargazer plugin must be placed in Stargazer's plugin (lib)
@@ -113,6 +111,7 @@ using this plugin:
         allowemptyipparam                       #boolean, optional, require 'ipparamauth' option.
         kickprevious                            #boolean, optional.
         pppunitsave = 5                         #integer from 0 to 9, must not equal to ipparamauth and ipparamsave, optional, no default.
+        pppdtimeout = 120                       #positive integer, optional, default is 60*5.
         debug                                   #boolean, optional.
     </Module>
 ------------>|-------------------------------
@@ -140,6 +139,9 @@ the new connection will succeed.
     If 'pppunitsave' option is set, then Stargazer saves
 ppp interface unit number the user connected to in 
 'userdata<pppunitsave>' user field on user connect.
+    If there are no PINGs from particular pppd for
+'pppdtimeout' seconds, then the connection will be
+forcibly terminated.
     'debug' option enables purestg2 debug output to
 general Stargazer's logfile.
 

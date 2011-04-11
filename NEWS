@@ -1,3 +1,11 @@
+New in 2.2:
+* Support and require Stargazer 2.407-rc3.
+* Proper user disconnects in various scenarios.
+* Immediate pppd disconnect if user was disconnected by
+  Stargazer for some reason.
+* Watchdog timers for pppd connections (new option 
+  'pppdtimeout').
+
 New in 2.1:
 * User connect by Stargazer is now performed after IP has
   been negotiated. Before now it was done after successful
