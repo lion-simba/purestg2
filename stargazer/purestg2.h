@@ -105,7 +105,7 @@ private:
     int                     acceptClientConnection();
     int                     handleClientConnection(int clientsocket);
     int                     hupClientConnection(int clientsocket);
-    int                     clientDisconnectByStg(USER * user);
+    int                     checkStgDisconnects();
     int                     checkUserTimeouts();
     // ---------------------------------------------
     
@@ -114,6 +114,7 @@ private:
     int                     addConnection(int socket);
     int                     delConnection(int socket);
     
+    int                     clientDisconnectByStg(USER * user);
     int                     finishClientConnection(int socket);
     
     void                    activateNotifier(USER* user);
@@ -143,11 +144,11 @@ private:
     vector<int>                    busyunits;   //busyunits[unitnum-minppp] = socket_id which holds unitnum or -1 if unitnum is free
     map<int, CONNECTED_NOTIFIER*>  notifiers;   //connected notifier for user id
     
+    queue<USER_PTR>                tobeunauth;  //users to be unauthenticated
+    pthread_mutex_t                tobeunauth_mutex;
+
     queue< pair<USER_PTR, time_t> >     userswds;    //users watchdogs
     map<USER_PTR, time_t>               userstos;    //users timeouts (most later watchdog time)
-    
-    //main variables mutex
-    pthread_mutex_t         mutex;
     
     //properties
     string                  authsocketpath;

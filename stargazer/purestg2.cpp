@@ -116,7 +116,8 @@ GetStgLogger()("CONNECTED_NOTIFIER destroyed (%d)", notifiers_count);
 
 void CONNECTED_NOTIFIER::Notify(const bool &, const bool &)
 {
-    auth->clientDisconnectByStg(user); // <- this object will be destroyed inside of this call !!!
+    STG_LOCKER(&auth->tobeunauth_mutex, __FILE__, __LINE__);
+    auth->tobeunauth.push(user);
 }
 
 //-----------------------------------------------------------------------------
@@ -140,12 +141,12 @@ AUTH_PURESTG2::AUTH_PURESTG2()
     unitsave = -1;
     pppdtimeout = 60*5;
     
-    pthread_mutex_init(&mutex, NULL);
+    pthread_mutex_init(&tobeunauth_mutex, NULL);
 }
 //-----------------------------------------------------------------------------
 AUTH_PURESTG2::~AUTH_PURESTG2()
 {
-    pthread_mutex_destroy(&mutex);
+    pthread_mutex_destroy(&tobeunauth_mutex);
 }
 //-----------------------------------------------------------------------------
 void AUTH_PURESTG2::SetUsers(USERS * u)
@@ -377,10 +378,16 @@ void* AUTH_PURESTG2::Run(void * me)
 
     while (auth->nonstop)
     {
-        int pollresult = poll(&auth->connections.front(), auth->connections.size(), 1000);
+        //check if some users were disconnected by stg
+        if (auth->checkStgDisconnects() < 0)
+            auth->WriteServLog("purestg2: ERROR: checkStgDisconnects failed");
 
+        //check if some user should be disconnected by timeout
         if (auth->checkUserTimeouts() < 0)
             auth->WriteServLog("purestg2: ERROR: checkUserTimeouts failed");
+
+        //check if have some data from pppds
+        int pollresult = poll(&auth->connections.front(), auth->connections.size(), 1000);
 
         if (pollresult == -1)
         {
@@ -390,7 +397,7 @@ void* AUTH_PURESTG2::Run(void * me)
         }
 
         if (pollresult == 0)
-            continue;
+            continue; //no new data
             
         changedsockets.clear();
         hupsockets.clear();
@@ -491,8 +498,6 @@ int AUTH_PURESTG2::finishClientConnection(int socket)
     USER_PTR user = getUserBySocket(socket);
     if (user)
         usersockets.erase(user->GetID());
-    else
-        WriteServLog("purestg2: BUG: Can't find user for socket %d", socket);
 
     //remove connection
     int ret;
@@ -517,8 +522,6 @@ int AUTH_PURESTG2::finishClientConnection(int socket)
 //-----------------------------------------------------------------------------
 int AUTH_PURESTG2::acceptClientConnection()
 {
-    STG_LOCKER(&mutex, __FILE__, __LINE__);
-    
     int clientsocket;
 
     clientsocket = accept(listeningsocket, NULL, NULL);
@@ -542,8 +545,6 @@ int AUTH_PURESTG2::acceptClientConnection()
 //-----------------------------------------------------------------------------
 int AUTH_PURESTG2::hupClientConnection(int clientsocket)
 {
-    STG_LOCKER(&mutex, __FILE__, __LINE__);
-    
     USER_PTR user = getUserBySocket(clientsocket);
     
     int ret;
@@ -555,21 +556,17 @@ int AUTH_PURESTG2::hupClientConnection(int clientsocket)
     {
         if (user->IsAuthorizedBy(this))
         {
-            WriteServLog("purestg2: User %s is still authorized, unauthorizing...", user->GetLogin().c_str());
+            WriteServLog("purestg2: User \"%s\" is still authorized after socket had closed, unauthorizing...", user->GetLogin().c_str());
             deactivateNotifier(user);
             user->Unauthorize(this);
         }
     }
-    else
-        WriteServLog("purestg2: BUG: Can't find user for socket %d", clientsocket);
         
     return 0;
 }
 //-----------------------------------------------------------------------------
 int AUTH_PURESTG2::handleClientConnection(int clientsocket)
 {
-    STG_LOCKER(&mutex, __FILE__, __LINE__);
-    
     struct pureproto_packet_ask ask;
 
     int result = recv(clientsocket, &ask, sizeof(ask), MSG_WAITALL);
@@ -911,26 +908,21 @@ int AUTH_PURESTG2::getUnitBySocket(int socket)
 //-----------------------------------------------------------------------------
 int AUTH_PURESTG2::clientDisconnectByStg(USER * user)
 {
-    STG_LOCKER(&mutex, __FILE__, __LINE__);
-    
     int socket = usersockets[user->GetID()];
-            
+
     WriteServLog("purestg2: User \"%s\" is disconnected by stargazer. Closing auth socket %d.", user->GetLogin().c_str(), socket);
     
+    deactivateNotifier(user);
     user->Unauthorize(this);
     
     if (finishClientConnection(socket) < 0)
         WriteServLog("purestg2: BUG: Can't del connection socket %d!", socket);
-    
-    deactivateNotifier(user);
     
     return 0;
 }
 //-----------------------------------------------------------------------------
 int AUTH_PURESTG2::checkUserTimeouts()
 {
-    STG_LOCKER(&mutex, __FILE__, __LINE__);
-    
     struct timeval tv;
     if (gettimeofday(&tv, NULL) < 0)
     {
@@ -968,6 +960,21 @@ int AUTH_PURESTG2::checkUserTimeouts()
     }
 }
 //-----------------------------------------------------------------------------
+int AUTH_PURESTG2::checkStgDisconnects()
+{
+    STG_LOCKER(&tobeunauth_mutex, __FILE__, __LINE__);
+
+    while (!tobeunauth.empty())
+    {
+        USER_PTR user = tobeunauth.front();
+        if (clientDisconnectByStg(user) < 0)
+            WriteServLog("purestg2: ERROR: clientDisconnectByStg failed for user %s", user->GetLogin().c_str());
+        tobeunauth.pop();
+    }
+
+    return 0;
+}
+//-----------------------------------------------------------------------------
 void AUTH_PURESTG2::activateNotifier(USER* user)
 {
     CONNECTED_NOTIFIER* cn = CONNECTED_NOTIFIER::Create(this, user);
@@ -985,8 +992,8 @@ void AUTH_PURESTG2::deactivateNotifier(USER* user)
         return;
     }
     user->DelConnectedAfterNotifier(iter->second);
-    notifiers.erase(iter);
     delete iter->second;
+    notifiers.erase(iter);
 }
 //-----------------------------------------------------------------------------
 int AUTH_PURESTG2::updateUserWatchdog(USER* user)
