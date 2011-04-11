@@ -502,7 +502,7 @@ int AUTH_PURESTG2::finishClientConnection(int socket)
     //free unit holded by this socket
     int unit = getUnitBySocket(socket);
     if (unit >= 0)
-        busyunits[unit] = -1;
+        busyunits[unit-minppp] = -1;
     else
         WriteServLog("purestg2: BUG: Can't find unit for socket %d", socket);
         
