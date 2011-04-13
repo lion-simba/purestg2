@@ -1,3 +1,166 @@
+commit 5b7c28e
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-04-13
+
+    Version bump
+
+configure
+configure.ac
+
+commit 422a992
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-04-13
+
+    Changes in configure according to new stg headers location
+
+Makefile.in
+configure
+configure.ac
+pppd/Makefile.am
+pppd/Makefile.in
+stargazer/Makefile.am
+stargazer/Makefile.in
+
+commit 9703669
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-04-12
+
+    README and NEWS update for 2.2
+
+NEWS
+README
+
+commit 8ec82b3
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-04-11
+
+    Mention debug option in README
+
+README
+
+commit 938c8ae
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-04-11
+
+    Some comments
+
+stargazer/purestg2.h
+
+commit e13ffc3
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-04-11
+
+    Stg disconnects are checked now from the main purestg2 thread. Deadlock fixed.
+
+stargazer/purestg2.cpp
+stargazer/purestg2.h
+
+commit 714a2a6
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-04-11
+
+    Memory corruption / segmentation fault fix
+
+stargazer/purestg2.cpp
+
+commit 0cbe79f
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-04-11
+
+    Keepalive sequence is now started after user connect, not on plugin init. Dump pppd options to syslog when started in debug mode.
+
+pppd/purestg2.c
+
+commit 9ab04fb
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-04-10
+
+    fix a typo
+
+stargazer/purestg2.cpp
+
+commit d2987a0
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-04-10
+
+    Users watchdog timers
+
+config.h.in
+configure
+configure.ac
+stargazer/purestg2.cpp
+stargazer/purestg2.h
+
+commit 388ad4c
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-04-09
+
+    Mutex added
+
+config.h.in
+configure
+configure.ac
+stargazer/purestg2.cpp
+stargazer/purestg2.h
+
+commit af5b13d
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-04-09
+
+    Little refactoring
+
+config.h.in
+configure
+configure.ac
+include/pureproto.h
+pppd/purestg2.c
+stargazer/purestg2.cpp
+stargazer/purestg2.h
+
+commit ce0452b
+Author: Alexey Osipov <lion-simba@pridelands.ru>
+Date:   2011-02-22
+
+    Close socket on user disconnect by Stargazer.
+
+config.h.in
+configure
+configure.ac
+stargazer/purestg2.cpp
+stargazer/purestg2.h
+
+commit 2199614
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-04-08
+
+    stg-2.407-rc3 prepare
+
+config.h.in
+configure
+configure.ac
+include/pureproto.h
+pppd/purestg2.c
+stargazer/purestg2.cpp
+stargazer/purestg2.h
+
+commit 3259a6e
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-03-03
+
+    Forbid relative path in --with-stg-headers and --with-pppd-headers
+
+configure
+configure.ac
+
+commit b14e679
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-03-03
+
+    ChangeLog and configure updated
+
+ChangeLog
+configure
+
 commit c82272f
 Author: Alexey Osipov <simba@lerlan.ru>
 Date:   2011-03-03
