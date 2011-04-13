@@ -69,11 +69,14 @@ AC_ARG_WITH([pppd-headers],
         PPPINCS="$withval"
     ],
     [PPPINCS="/usr/include/pppd"])
-AC_SUBST([PPPINCS])
+
+PPPFLAGS="-I$PPPINCS"
+AC_SUBST([PPPFLAGS])
+
 
 AC_ARG_WITH([stg-headers],
     [AC_HELP_STRING([--with-stg-headers],
-        [where to look for stargazer header files, defaults to /usr/include/stargazer])],
+        [specifies alternative location of stargazer header files])],
     [
         case "$withval" in
             /*)
@@ -84,20 +87,21 @@ AC_ARG_WITH([stg-headers],
                 AC_MSG_ERROR([Relative path to stargazer header files is not allowed])
                 ;;
         esac
-        STGINCS="$withval"
+        STGFLAGS="-I$withval"
+        AC_SUBST([STGFLAGS])
     ],
-    [STGINCS="/usr/include/stargazer"])
-AC_SUBST([STGINCS])
+    [])
 
-# Checks for header files.
+# Checks for standard header files.
 AC_LANG([C])
 AC_CHECK_HEADERS([netinet/in.h stdlib.h string.h sys/socket.h unistd.h sys/time.h])
 
 AC_LANG([C++])
 AC_CHECK_HEADERS([cstdlib algorithm])
 
-CPPFLAGS="$CPPFLAGS -I$PPPINCS -I$STGINCS"
+CPPFLAGS="$CPPFLAGS $PPPFLAGS $STGFLAGS"
 
+# Checks for header files.
 AC_LANG([C])
 AC_CHECK_HEADERS([pppd.h fsm.h], [], 
 [

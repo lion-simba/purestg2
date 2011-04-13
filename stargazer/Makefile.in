@@ -160,7 +160,7 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
-PPPINCS = @PPPINCS@
+PPPFLAGS = @PPPFLAGS@
 PTHREAD_CC = @PTHREAD_CC@
 PTHREAD_CFLAGS = @PTHREAD_CFLAGS@
 PTHREAD_LIBS = @PTHREAD_LIBS@
@@ -168,7 +168,7 @@ RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
-STGINCS = @STGINCS@
+STGFLAGS = @STGFLAGS@
 STRIP = @STRIP@
 VERSION = @VERSION@
 abs_builddir = @abs_builddir@
@@ -230,7 +230,7 @@ top_srcdir = @top_srcdir@
 stgmodule_LTLIBRARIES = mod_auth_purestg2.la
 mod_auth_purestg2_la_SOURCES = purestg2.cpp purestg2.h ../include/pureproto.h
 mod_auth_purestg2_la_LDFLAGS = -module -avoid-version -shared -s
-AM_CPPFLAGS = -I.. -I$(top_srcdir)/include -I$(STGINCS)
+AM_CPPFLAGS = -I.. -I$(top_srcdir)/include $(STGFLAGS)
 all: all-am
 
 .SUFFIXES:

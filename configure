@@ -749,8 +749,8 @@ LTLIBOBJS
 LIBOBJS
 stgmoduledir
 pppmoduledir
-STGINCS
-PPPINCS
+STGFLAGS
+PPPFLAGS
 PTHREAD_CFLAGS
 PTHREAD_LIBS
 PTHREAD_CC
@@ -1530,8 +1530,8 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-pppd-headers     where to look for pppd header files, defaults to
                           /usr/include/pppd
-  --with-stg-headers      where to look for stargazer header files, defaults
-                          to /usr/include/stargazer
+  --with-stg-headers      specifies alternative location of stargazer header
+                          files
   --with-pppd-libdir      where to install pppd plugin, defaults to
                           /usr/lib/pppd
   --with-stg-libdir       where to install stargazer plugin, defaults to
@@ -15055,6 +15055,9 @@ else
 fi
 
 
+PPPFLAGS="-I$PPPINCS"
+
+
 
 
 # Check whether --with-stg-headers was given.
@@ -15069,15 +15072,13 @@ if test "${with_stg_headers+set}" = set; then :
                 as_fn_error "Relative path to stargazer header files is not allowed" "$LINENO" 5
                 ;;
         esac
-        STGINCS="$withval"
+        STGFLAGS="-I$withval"
 
-else
-  STGINCS="/usr/include/stargazer"
+
 fi
 
 
-
-# Checks for header files.
+# Checks for standard header files.
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -15121,8 +15122,9 @@ fi
 done
 
 
-CPPFLAGS="$CPPFLAGS -I$PPPINCS -I$STGINCS"
+CPPFLAGS="$CPPFLAGS $PPPFLAGS $STGFLAGS"
 
+# Checks for header files.
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
