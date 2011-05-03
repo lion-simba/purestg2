@@ -958,6 +958,8 @@ int AUTH_PURESTG2::checkUserTimeouts()
                 WriteServLog("purestg2: BUG: Can't find socket for user \"%s\"", user->GetLogin().c_str());
         }
     }
+
+    return 0;
 }
 //-----------------------------------------------------------------------------
 int AUTH_PURESTG2::checkStgDisconnects()
