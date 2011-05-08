@@ -248,16 +248,13 @@ int pap_stg_verify(char *user,
     }
     
     //check if Stargazer accept given ipparam
-    if (ipparam && ipparam[0] != '\0')
+    if (pureproto_setipparam(ipparam, user) == -1)
     {
-        if (pureproto_setipparam(ipparam, user) == -1)
-        {
-            if (ipparam)
-                error("purestg2: Stargazer refuse to accept ipparam \"%s\" for user \"%s\".", ipparam, user);
-            else
-                error("purestg2: Stargazer refuse to accept empty ipparam for user \"%s\".", user);
-            return 0;
-        }
+        if (ipparam)
+            error("purestg2: Stargazer refuse to accept ipparam \"%s\" for user \"%s\".", ipparam, user);
+        else
+            error("purestg2: Stargazer refuse to accept empty ipparam for user \"%s\".", user);
+        return 0;
     }
 
     //ask stg if user can be turned on
