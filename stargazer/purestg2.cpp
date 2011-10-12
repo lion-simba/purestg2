@@ -558,7 +558,7 @@ int AUTH_PURESTG2::hupClientConnection(int clientsocket)
         {
             WriteServLog("purestg2: User \"%s\" is still authorized after socket had closed, unauthorizing...", user->GetLogin().c_str());
             deactivateNotifier(user);
-            user->Unauthorize(this);
+            users->Unauthorize(user->GetLogin(), this);
         }
     }
         
@@ -635,7 +635,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
                 int oldsocket = iter->second;
                 WriteServLog("purestg2: Terminating previous session (oldsocket=%d) for user \"%s\"", oldsocket, ask.login);
                 deactivateNotifier(user);
-                user->Unauthorize(this);
+                users->Unauthorize(user->GetLogin(), this);
                 if (finishClientConnection(oldsocket) < 0)
                     WriteServLog("purestg2: BUG: can't finishClientConnection for oldsocket=%d for user \"%s\"", oldsocket, ask.login);                
                 
@@ -650,7 +650,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
         }
 
         //authorize user
-        if (user->Authorize((user->GetProperty().ips.Get()[0]).ip, 0xffffffff, this))
+        if (users->Authorize(user->GetLogin(), (user->GetProperty().ips.Get()[0]).ip, 0xffffffff, this))
         {
             WriteServLog("purestg2: ERROR: Can't authorize user %s.", ask.login);
             reply.result = PUREPROTO_REPLY_ERROR;
@@ -694,7 +694,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
         
         //unauthorize
         deactivateNotifier(user);
-        user->Unauthorize(this);
+        users->Unauthorize(user->GetLogin(), this);
         
         WriteServLog("purestg2: User %s (socket=%d) is disconnected.", ask.login, clientsocket);
 
@@ -913,7 +913,7 @@ int AUTH_PURESTG2::clientDisconnectByStg(USER * user)
     WriteServLog("purestg2: User \"%s\" is disconnected by stargazer. Closing auth socket %d.", user->GetLogin().c_str(), socket);
     
     deactivateNotifier(user);
-    user->Unauthorize(this);
+    users->Unauthorize(user->GetLogin(), this);
     
     if (finishClientConnection(socket) < 0)
         WriteServLog("purestg2: BUG: Can't del connection socket %d!", socket);
@@ -944,7 +944,7 @@ int AUTH_PURESTG2::checkUserTimeouts()
         {
             WriteServLog("purestg2: No pings from PPPD for user \"%s\" for %d seconds, terminating connection...", user->GetLogin().c_str(), pppdtimeout);
             deactivateNotifier(user);
-            user->Unauthorize(this);
+            users->Unauthorize(user->GetLogin(), this);
             
             map<int, int>::iterator socketiter;
             socketiter = usersockets.find(user->GetID());
