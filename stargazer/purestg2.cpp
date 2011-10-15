@@ -114,10 +114,14 @@ GetStgLogger()("CONNECTED_NOTIFIER destroyed (%d)", notifiers_count);
 #endif
 }
 
-void CONNECTED_NOTIFIER::Notify(const bool &, const bool &)
+void CONNECTED_NOTIFIER::Notify(const bool & bWasConnected, const bool & bIsConnected)
 {
     STG_LOCKER(&auth->tobeunauth_mutex, __FILE__, __LINE__);
-    auth->tobeunauth.push(user);
+#ifdef CONNECTED_NOTIFIER_DEBUG
+    GetStgLogger()("CONNECTED_NOTIFIER raised for user \"%s\" (%d -> %d)", user->GetLogin().c_str(), bWasConnected, bIsConnected);
+#endif
+    if (bWasConnected && !bIsConnected)
+        auth->tobeunauth.push(user);
 }
 
 //-----------------------------------------------------------------------------
