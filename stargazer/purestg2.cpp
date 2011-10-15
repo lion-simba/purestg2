@@ -650,7 +650,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
         }
 
         //authorize user
-        if (users->Authorize(user->GetLogin(), (user->GetProperty().ips.Get()[0]).ip, 0xffffffff, this))
+        if (!users->Authorize(user->GetLogin(), (user->GetProperty().ips.Get()[0]).ip, 0xffffffff, this))
         {
             WriteServLog("purestg2: ERROR: Can't authorize user %s.", ask.login);
             reply.result = PUREPROTO_REPLY_ERROR;
