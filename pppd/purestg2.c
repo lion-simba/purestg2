@@ -141,6 +141,7 @@ void user_on(void* opaque, int xz)
     if (pureproto_connectuser(userlogin) == -1)
     {
         error("purestg2: Can't connect user %s.", userlogin);
+        die(1);
         return;
     }
 
