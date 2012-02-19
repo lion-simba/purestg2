@@ -76,7 +76,10 @@ int pureproto_setipparam(const char* ipparam, const char* login)
     int result;
     
     if (stg_socket < 0)
+    {
+        errno = ENOTCONN;
         return -1;
+    }
         
     memset(&ask, 0, sizeof(ask));
     
@@ -93,16 +96,28 @@ int pureproto_setipparam(const char* ipparam, const char* login)
         return -1;
         
     if (result != sizeof(reply))
+    {
+        errno = EBADMSG;
         return -1;
+    }
     
     if (ask.type != reply.type)
+    {
+        errno = EBADMSG;
         return -1;
+    }
 
     if (strncmp(ask.login, reply.login, LOGIN_LEN) != 0)
+    {
+        errno = EBADMSG;
         return -1;
+    }
 
     if (reply.result != PUREPROTO_REPLY_OK)
+    {
+        errno = EIO;
         return -1;
+    }
     
     return 0;
 }
@@ -115,7 +130,10 @@ int pureproto_connectuser(const char* login)
     int result;
 
     if (stg_socket < 0)
+    {
+        errno = ENOTCONN;
         return -1;
+    }
 
     memset(&ask, 0, sizeof(ask));
 
@@ -130,16 +148,28 @@ int pureproto_connectuser(const char* login)
         return -1;
 
     if (result != sizeof(reply))
+    {
+        errno = EBADMSG;
         return -1;
+    }
 
     if (ask.type != reply.type)
+    {
+        errno = EBADMSG;
         return -1;
+    }
 
     if (strncmp(ask.login, reply.login, LOGIN_LEN) != 0)
+    {
+        errno = EBADMSG;
         return -1;
+    }
 
     if (reply.result != PUREPROTO_REPLY_OK)
+    {
+        errno = EIO;
         return -1;
+    }
 
     return 0;
 }
@@ -167,16 +197,28 @@ int pureproto_disconnectuser(const char* login)
         return -1;
 
     if (result != sizeof(reply))
+    {
+        errno = EBADMSG;
         return -1;
+    }
 
     if (ask.type != reply.type)
+    {
+        errno = EBADMSG;
         return -1;
+    }
 
     if (strncmp(ask.login, reply.login, LOGIN_LEN) != 0)
+    {
+        errno = EBADMSG;
         return -1;
+    }
 
     if (reply.result != PUREPROTO_REPLY_OK)
+    {
+        errno = EIO;
         return -1;
+    }
 
     return 0;
 }
@@ -189,7 +231,10 @@ int pureproto_ping(int timeout, const char* login)
     int result;
 
     if (stg_socket < 0)
+    {
+        errno = ENOTCONN;
         return -1;
+    }
 
     memset(&ask, 0, sizeof(ask));
 
