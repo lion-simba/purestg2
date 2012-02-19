@@ -1,3 +1,67 @@
+commit 5c02ec6
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2012-02-19
+
+    set errno variable in pureclient.c
+
+pppd/pureclient.c
+
+commit b95c105
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-10-16
+
+    Check new value of CENNECTED property before initiating disconnectByStg()
+
+stargazer/purestg2.cpp
+
+commit c16b498
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-10-16
+
+    disconnect pppd session if stargazer failed to USERS::Authoraize() the user
+
+pppd/purestg2.c
+
+commit 6d0e23a
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-10-16
+
+    Users-Authorize() success return value was changed from int 0 to bool true.
+
+stargazer/purestg2.cpp
+
+commit 1d1b3f1
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-10-12
+
+    Make purestg2 compile against stg-2.408-rc2
+
+stargazer/purestg2.cpp
+
+commit e5a2d5e
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-05-08
+
+    Unnecessary check removed, which could lead to incorrect PAP authentication with ipparam.
+
+pppd/purestg2.c
+
+commit 66c86cc
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-05-03
+
+    Add forgotten `return` statement in function checkUserTimeouts()
+
+stargazer/purestg2.cpp
+
+commit 3f8f9ca
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2011-04-13
+
+    ChangeLog updated
+
+ChangeLog
+
 commit 5b7c28e
 Author: Alexey Osipov <simba@lerlan.ru>
 Date:   2011-04-13

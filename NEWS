@@ -1,3 +1,7 @@
+New in 2.3:
+* Support and require Stargazer 2.408.
+* Various bugs fixed.
+
 New in 2.2:
 * Support and require Stargazer 2.407-rc3.
 * Proper user disconnects in various scenarios.
