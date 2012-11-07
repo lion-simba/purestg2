@@ -74,33 +74,33 @@ int pureproto_setipparam(const char* ipparam, const char* login)
     struct pureproto_packet_ask ask;
     struct pureproto_packet_reply reply;
     int result;
-    
+
     if (stg_socket < 0)
     {
         errno = ENOTCONN;
         return -1;
     }
-        
+
     memset(&ask, 0, sizeof(ask));
-    
+
     ask.type = PUREPROTO_ASK_IPPARAM;
     strncpy(ask.login, login, LOGIN_LEN);
     if (ipparam)
         strncpy(ask.ipparam, ipparam, IPPARAM_LEN);
-    
+
     if (send(stg_socket, &ask, sizeof(ask), 0) == -1)
         return -1;
 
     result = recv(stg_socket, &reply, sizeof(reply), MSG_WAITALL);
     if (result == -1)
         return -1;
-        
+
     if (result != sizeof(reply))
     {
         errno = EBADMSG;
         return -1;
     }
-    
+
     if (ask.type != reply.type)
     {
         errno = EBADMSG;
@@ -118,7 +118,7 @@ int pureproto_setipparam(const char* ipparam, const char* login)
         errno = EIO;
         return -1;
     }
-    
+
     return 0;
 }
 

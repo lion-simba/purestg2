@@ -58,7 +58,7 @@ static char predownscript[MAXPATHLEN+1] = "";
 static char preupscript[MAXPATHLEN+1] = "";
 
 static option_t options[] = {
-    { "keepalivetimeout", o_int, &keepalivetimeout, "timeout of waiting for stargazer ALIVE packets (seconds)", 
+    { "keepalivetimeout", o_int, &keepalivetimeout, "timeout of waiting for stargazer ALIVE packets (seconds)",
       OPT_LLIMIT, NULL, 0, 10},
     { "authsocket", o_string, authsocketpath, "Stargazer auth socket path",
       OPT_PRIV | OPT_STATIC | OPT_ULIMIT, NULL, MAXPATHLEN },
@@ -94,7 +94,7 @@ void run_script(char* script)
     argv[5] = strremote;
     argv[6] = ipparam;
     argv[7] = NULL;
-    
+
     run_program(script, argv, 0, NULL, NULL, 1);
 }
 
@@ -136,7 +136,7 @@ void user_on(void* opaque, int xz)
 {
     //run and wait for pre-iup script if it exists
     run_script(preupscript);
-    
+
     //ask stargazer to enable this user
     if (pureproto_connectuser(userlogin) == -1)
     {
@@ -155,7 +155,7 @@ void user_off(void* opaque, int xz)
 {
     //run and wait for pre-down script if it exists
     run_script(predownscript);
-    
+
     //if user, then ask stargazer to disable this user
     if (pureproto_disconnectuser(userlogin) == -1)
     {
@@ -193,7 +193,7 @@ int chap_stg_verify(char *user, char *ourname, int id,
         error("purestg2: Login length of login \"%s\" is too big.", user);
         return code;
     }
-    
+
     //check if Stargazer accept given ipparam
     if (pureproto_setipparam(ipparam, user) == -1)
     {
@@ -247,7 +247,7 @@ int pap_stg_verify(char *user,
         error("purestg2: Login length of login \"%s\" is too big.", user);
         return 0;
     }
-    
+
     //check if Stargazer accept given ipparam
     if (pureproto_setipparam(ipparam, user) == -1)
     {
@@ -342,14 +342,14 @@ void* socketwatch_thread(void* arg)
 {
     int pres;
     struct pollfd watchfd;
-    
+
     watchfd.fd = stg_socket;
     watchfd.events = 0;
     watchfd.revents = 0;
-    
+
     if(poll(&watchfd, 1, -1) < 0)
         error("purestg2: poll failed!");
-        
+
     if (watchfd.revents & POLLHUP)
     {
         info("purestg2: stargazer socket has just been closed. Terminating connection.");
@@ -359,7 +359,7 @@ void* socketwatch_thread(void* arg)
             die(0);
         }
     }
-    
+
     return NULL;
 }
 
@@ -382,7 +382,7 @@ int stg_phase(int phase)
             error("purestg2: Can't connect to stargazer's socket %s. Exiting.", authsocketpath);
             die(1);
         }
-        
+
         //spawning socketwatch thread
         if (pthread_create(&socketwatch, NULL, socketwatch_thread) != 0)
         {

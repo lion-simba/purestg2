@@ -144,7 +144,7 @@ AUTH_PURESTG2::AUTH_PURESTG2()
     kickprevious = false;
     unitsave = -1;
     pppdtimeout = 60*5;
-    
+
     pthread_mutex_init(&tobeunauth_mutex, NULL);
 }
 //-----------------------------------------------------------------------------
@@ -256,7 +256,7 @@ int AUTH_PURESTG2::ParseSettings()
         errorStr = "Parameter \"authsocket\" must have a value.";
         return 1;
     }
-    
+
     int busyuserdata_count = 0;
     set<int> busyuserdata;
     if (ipparamauth != -1)
@@ -274,13 +274,13 @@ int AUTH_PURESTG2::ParseSettings()
         busyuserdata.insert(unitsave);
         busyuserdata_count++;
     }
-    
+
     if (busyuserdata.size() != busyuserdata_count)
     {
         errorStr = "Values for \"ipparamsave\", \"ipparamauth\" and \"pppunitsave\" must be different.";
         return 1;
     }
-    
+
     if (allowemptyipparam && ipparamauth == -1)
     {
         errorStr = "Parameter \"ipparamauth\" must be set to use \"allowemptyipparam\" option.";
@@ -402,7 +402,7 @@ void* AUTH_PURESTG2::Run(void * me)
 
         if (pollresult == 0)
             continue; //no new data
-            
+
         changedsockets.clear();
         hupsockets.clear();
 
@@ -507,20 +507,20 @@ int AUTH_PURESTG2::finishClientConnection(int socket)
     int ret;
     if ((ret = delConnection(socket)) < 0)
         WriteServLog("purestg2: BUG: delConnection for socket %d failed: %d", socket, ret);
-    
+
     //free unit holded by this socket
     int unit = getUnitBySocket(socket);
     if (unit >= 0)
         busyunits[unit-minppp] = -1;
     else
         WriteServLog("purestg2: BUG: Can't find unit for socket %d", socket);
-        
+
     //remove user timeout if any
     userstos.erase(user);
-    
+
     //close socket
     close(socket);
-    
+
     return 0;
 }
 //-----------------------------------------------------------------------------
@@ -550,11 +550,11 @@ int AUTH_PURESTG2::acceptClientConnection()
 int AUTH_PURESTG2::hupClientConnection(int clientsocket)
 {
     USER_PTR user = getUserBySocket(clientsocket);
-    
+
     int ret;
     if ((ret = finishClientConnection(clientsocket)) < 0)
         WriteServLog("purestg2: BUG: Can't finish hupped connection for socket %d (ret=%d)", clientsocket, ret);
-    
+
     //if this was unexpected socket termination, unauthorize user
     if (user)
     {
@@ -565,7 +565,7 @@ int AUTH_PURESTG2::hupClientConnection(int clientsocket)
             users->Unauthorize(user->GetLogin(), this);
         }
     }
-        
+
     return 0;
 }
 //-----------------------------------------------------------------------------
@@ -624,7 +624,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
             reply.result = PUREPROTO_REPLY_ERROR;
             break;
         }
-        
+
         //check if already connected and disconnect previous instance if necessary
         if (user->GetAuthorized())
         {
@@ -641,8 +641,8 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
                 deactivateNotifier(user);
                 users->Unauthorize(user->GetLogin(), this);
                 if (finishClientConnection(oldsocket) < 0)
-                    WriteServLog("purestg2: BUG: can't finishClientConnection for oldsocket=%d for user \"%s\"", oldsocket, ask.login);                
-                
+                    WriteServLog("purestg2: BUG: can't finishClientConnection for oldsocket=%d for user \"%s\"", oldsocket, ask.login);
+
                 //TODO: wait for old pppd really finish somehow.
             }
             else
@@ -660,9 +660,9 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
             reply.result = PUREPROTO_REPLY_ERROR;
             break;
         }
-        
+
         usersockets[user->GetID()] = clientsocket;
-        
+
         if (unitsave != -1)
         {
             vector<int>::iterator unit = find(busyunits.begin(), busyunits.end(), clientsocket);
@@ -678,7 +678,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
 
         //create notifier on user connected state change for handling user's disconnect by STG
         activateNotifier(user);
-        
+
         //create watchdog timer for this user
         if (updateUserWatchdog(user) < 0)
             WriteServLog("purestg2: ERROR: updateUserWatchdog failed (socket=%d)", clientsocket);
@@ -695,11 +695,11 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
             reply.result = PUREPROTO_REPLY_ERROR;
             break;
         }
-        
+
         //unauthorize
         deactivateNotifier(user);
         users->Unauthorize(user->GetLogin(), this);
-        
+
         WriteServLog("purestg2: User %s (socket=%d) is disconnected.", ask.login, clientsocket);
 
         reply.result = PUREPROTO_REPLY_OK;
@@ -787,7 +787,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
             }
         }
         break;
-        
+
     case PUREPROTO_ASK_IPPARAM:
         reply.result = PUREPROTO_REPLY_OK;
         if (d) WriteServLog("purestg2: Got ipparam: \"%s\"", ask.ipparam);
@@ -796,7 +796,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
             string ipparam(ask.ipparam);
             if (ipparamsave != -1)
                 getUserData(user, ipparamsave) = ipparam;
-        
+
             //check if ipparam is allowed
             if (ipparamauth != -1)
             {
@@ -871,12 +871,12 @@ USER_PROPERTY<string>&  AUTH_PURESTG2::getUserData(USER* user, int dataNum)
 USER_PTR AUTH_PURESTG2::getUserBySocket(int socket)
 {
     USER_PTR user = NULL;
-    
+
     map<int, int>::iterator iter;
     for(iter = usersockets.begin(); iter != usersockets.end(); ++iter)
         if (iter->second == socket)
             break;
-     
+
     if (iter != usersockets.end())
     {
         int hSearch = users->OpenSearch();
@@ -889,7 +889,7 @@ USER_PTR AUTH_PURESTG2::getUserBySocket(int socket)
             }
         users->CloseSearch(hSearch);
     }
-    
+
     return user;
 }
 //-----------------------------------------------------------------------------
@@ -903,10 +903,10 @@ int AUTH_PURESTG2::getUnitBySocket(int socket)
             break;
         unit++;
     }
-    
+
     if (iter == busyunits.end())
         return -1;
-        
+
     return unit;
 }
 //-----------------------------------------------------------------------------
@@ -915,13 +915,13 @@ int AUTH_PURESTG2::clientDisconnectByStg(USER * user)
     int socket = usersockets[user->GetID()];
 
     WriteServLog("purestg2: User \"%s\" is disconnected by stargazer. Closing auth socket %d.", user->GetLogin().c_str(), socket);
-    
+
     deactivateNotifier(user);
     users->Unauthorize(user->GetLogin(), this);
-    
+
     if (finishClientConnection(socket) < 0)
         WriteServLog("purestg2: BUG: Can't del connection socket %d!", socket);
-    
+
     return 0;
 }
 //-----------------------------------------------------------------------------
@@ -933,23 +933,23 @@ int AUTH_PURESTG2::checkUserTimeouts()
         WriteServLog("purestg2: BUG: gettimeofday failed: %s", strerror(errno));
         return -1;
     }
-    
+
     while(!userswds.empty() && tv.tv_sec > userswds.front().second)
     {
         USER_PTR user = userswds.front().first;
         userswds.pop();
-        
+
         map<USER_PTR, time_t>::iterator iter;
         iter = userstos.find(user);
         if (iter == userstos.end())
             continue;
-        
+
         if (tv.tv_sec > iter->second)
         {
             WriteServLog("purestg2: No pings from PPPD for user \"%s\" for %d seconds, terminating connection...", user->GetLogin().c_str(), pppdtimeout);
             deactivateNotifier(user);
             users->Unauthorize(user->GetLogin(), this);
-            
+
             map<int, int>::iterator socketiter;
             socketiter = usersockets.find(user->GetID());
             if (socketiter != usersockets.end())
@@ -1011,13 +1011,13 @@ int AUTH_PURESTG2::updateUserWatchdog(USER* user)
         WriteServLog("purestg2: BUG: gettimeofday failed: %s", strerror(errno));
         return -1;
     }
-    
+
     time_t watchtime = tv.tv_sec + pppdtimeout;
     userstos[user] = watchtime;
     userswds.push(pair<USER_PTR, time_t>(user, watchtime));
     if (d)
         WriteServLog("purestg2: Watchdog timer for user \"%s\" submitted on %d", user->GetLogin().c_str(), watchtime);
-    
+
     return 0;
 }
 //-----------------------------------------------------------------------------
