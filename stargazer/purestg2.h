@@ -159,6 +159,7 @@ private:
     bool                    allowemptyipparam;
     bool                    kickprevious;
     int                     pppdtimeout;        //timeout to kill connection if no PINGs received
+    bool                    checkinetable;      //if not set, purestg2 will authorize user even if it's not IsInetable()
 };
 //-----------------------------------------------------------------------------
 

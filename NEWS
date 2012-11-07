@@ -1,3 +1,7 @@
+New in 2.4:
+* New Stargazer plugin configuration option: 'allownotinetable'.
+  See README for details.
+
 New in 2.3:
 * Support and require Stargazer 2.408.
 * Various bugs fixed.

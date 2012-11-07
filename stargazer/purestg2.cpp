@@ -144,6 +144,7 @@ AUTH_PURESTG2::AUTH_PURESTG2()
     kickprevious = false;
     unitsave = -1;
     pppdtimeout = 60*5;
+    checkinetable = true;
 
     pthread_mutex_init(&tobeunauth_mutex, NULL);
 }
@@ -243,6 +244,10 @@ int AUTH_PURESTG2::ParseSettings()
                 errorStr = "Parameter \"pppdtimeout\" must have positive integer value.";
                 return 1;
             }
+        }
+        else if (settings.moduleParams[i].param == "allownotinetable")
+        {
+            checkinetable = false;
         }
         else
         {
@@ -383,8 +388,9 @@ void* AUTH_PURESTG2::Run(void * me)
     while (auth->nonstop)
     {
         //check if some users were disconnected by stg
-        if (auth->checkStgDisconnects() < 0)
-            auth->WriteServLog("purestg2: ERROR: checkStgDisconnects failed");
+        if (auth->checkinetable)
+            if (auth->checkStgDisconnects() < 0)
+                auth->WriteServLog("purestg2: ERROR: checkStgDisconnects failed");
 
         //check if some user should be disconnected by timeout
         if (auth->checkUserTimeouts() < 0)
@@ -561,7 +567,8 @@ int AUTH_PURESTG2::hupClientConnection(int clientsocket)
         if (user->IsAuthorizedBy(this))
         {
             WriteServLog("purestg2: User \"%s\" is still authorized after socket had closed, unauthorizing...", user->GetLogin().c_str());
-            deactivateNotifier(user);
+            if (checkinetable)
+                deactivateNotifier(user);
             users->Unauthorize(user->GetLogin(), this);
         }
     }
@@ -638,7 +645,8 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
                 }
                 int oldsocket = iter->second;
                 WriteServLog("purestg2: Terminating previous session (oldsocket=%d) for user \"%s\"", oldsocket, ask.login);
-                deactivateNotifier(user);
+                if (checkinetable)
+                    deactivateNotifier(user);
                 users->Unauthorize(user->GetLogin(), this);
                 if (finishClientConnection(oldsocket) < 0)
                     WriteServLog("purestg2: BUG: can't finishClientConnection for oldsocket=%d for user \"%s\"", oldsocket, ask.login);
@@ -677,7 +685,8 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
         }
 
         //create notifier on user connected state change for handling user's disconnect by STG
-        activateNotifier(user);
+        if (checkinetable)
+            activateNotifier(user);
 
         //create watchdog timer for this user
         if (updateUserWatchdog(user) < 0)
@@ -697,7 +706,8 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
         }
 
         //unauthorize
-        deactivateNotifier(user);
+        if (checkinetable)
+            deactivateNotifier(user);
         users->Unauthorize(user->GetLogin(), this);
 
         WriteServLog("purestg2: User %s (socket=%d) is disconnected.", ask.login, clientsocket);
@@ -713,7 +723,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
             break;
         }
 
-        if (!user->IsInetable())
+        if (checkinetable && !user->IsInetable())
         {
             WriteServLog("purestg2: User %s (socket=%d) is blocked by stargazer.", ask.login, clientsocket);
             reply.result = PUREPROTO_REPLY_ERROR;
@@ -780,7 +790,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
             if (updateUserWatchdog(user) < 0)
                 WriteServLog("purestg2: ERROR: updateUserWatchdog failed (socket=%d)", clientsocket);
 
-            if (!user->IsInetable())
+            if (checkinetable && !user->IsInetable())
             {
                 WriteServLog("purestg2: User %s (socket=%d) is disconnected by stargazer. Notifing pppd.", ask.login, clientsocket);
                 reply.result = PUREPROTO_REPLY_ERROR;
@@ -947,7 +957,8 @@ int AUTH_PURESTG2::checkUserTimeouts()
         if (tv.tv_sec > iter->second)
         {
             WriteServLog("purestg2: No pings from PPPD for user \"%s\" for %d seconds, terminating connection...", user->GetLogin().c_str(), pppdtimeout);
-            deactivateNotifier(user);
+            if (checkinetable)
+                deactivateNotifier(user);
             users->Unauthorize(user->GetLogin(), this);
 
             map<int, int>::iterator socketiter;

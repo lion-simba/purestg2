@@ -32,6 +32,8 @@ methods are supported.
 2.1. Also, if 'ipparamauth' option is specified, Stargazer will
 check if supplied ipparam is valid for this user. Look for more
 details in CONFIGURATION section below.
+2.2. See also 'allownotinetable' option description in CONFIGURATION
+section below.
 
 3. If authentication was successfull:
 3.1 Ask Stargazer for user's IP address and set it as remote
@@ -112,6 +114,7 @@ using this plugin:
         kickprevious                            #boolean, optional.
         pppunitsave = 5                         #integer from 0 to 9, must not equal to ipparamauth and ipparamsave, optional, no default.
         pppdtimeout = 120                       #positive integer, optional, default is 60*5.
+        allownotinetable                        #boolean, optional.
         debug                                   #boolean, optional.
     </Module>
 ------------>|-------------------------------
@@ -142,6 +145,11 @@ ppp interface unit number the user connected to in
     If there are no PINGs from particular pppd for
 'pppdtimeout' seconds, then the connection will be
 forcibly terminated.
+    By default, purestg2 forbid authorization of users which
+are disabled by Stargazer (blocked, no money, etc.). If
+'allownotinetable' option is set, then such users will be
+authorized, but not 'connected' in terms of Stargazer (i.e.
+OnConnect will not execute).
     'debug' option enables purestg2 debug output to
 general Stargazer's logfile.
 
