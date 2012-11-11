@@ -15868,7 +15868,7 @@ ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
 
-for ac_header in stg/const.h stg/user.h stg/user_property.h stg/users.h stg/logger.h stg/auth.h stg/noncopyable.h stg/locker.h
+for ac_header in stg/const.h stg/noncopyable.h stg/logger.h stg/locker.h stg/user.h stg/user_property.h stg/users.h stg/auth.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_cxx_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
