@@ -15,7 +15,7 @@
  */
 
 /*
- *    Author: (c) 2009-2011 Alexey Osipov <simba@lerlan.ru>
+ *    Author: (c) 2009-2013 Alexey Osipov <public@alexey.osipov.name>
  */
  
 #ifndef H_PURESTG_PUREPROTOCLIENT

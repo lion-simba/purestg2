@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.65])
-AC_INIT([purestg2], [2.4], [simba@lerlan.ru])
+AC_INIT([purestg2], [2.4], [public@alexey.osipov.name])
 AM_INIT_AUTOMAKE([-Wall -Werror gnu])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_SRCDIR([include/pureproto.h])
