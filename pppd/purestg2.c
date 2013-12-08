@@ -164,14 +164,6 @@ void user_off(void* opaque, int xz)
     }
 
     info("purestg2: User %s disconnected.", userlogin);
-
-    if (pureproto_disconnect() == -1)
-    {
-        error("purestg2: Can't disconnect from stargazer.");
-        return;
-    }
-
-    info("purestg2: Disconnected from stargazer.");
 }
 
 #define MD5_HASH_SIZE    16
@@ -399,6 +391,16 @@ int stg_phase(int phase)
         }
 
         info("purestg2: ifunit set to %d.", req_unit);
+    }
+    else if (phase == PHASE_DEAD)
+    {
+        if (pureproto_disconnect() == -1)
+        {
+            error("purestg2: Can't disconnect from stargazer.");
+            return;
+        }
+
+        info("purestg2: Disconnected from stargazer.");
     }
 }
 
