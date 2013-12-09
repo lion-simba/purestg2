@@ -108,9 +108,12 @@ using this plugin:
     <Module auth_purestg2>
         authsocket = /var/run/purestg2.sock     #valid RW accessable path, required.
         minppp = 5                              #positive integer, optional, default is 10.
-        ipparamsave = 4                         #integer from 0 to 9, must not equal to ipparamauth and pppunitsave, optional, no default.
-        ipparamauth = 2                         #integer from 0 to 9, must not equal to ipparamsave and pppunitsave, optional, no default.
+        ipparamsave = 4                         #integer from 0 to 9, must not equal to ipparamauth, callingnumbersave, callingnumberauth and pppunitsave, optional, no default.
+        ipparamauth = 2                         #integer from 0 to 9, must not equal to ipparamsave, callingnumbersave, callingnumberauth and pppunitsave, optional, no default.
         allowemptyipparam                       #boolean, optional, require 'ipparamauth' option.
+        callingnumbersave = 1                   #integer from 0 to 9, must not equal to callingnumberauth, ipparamsave, ipparamauth and pppunitsave, optional, no default.
+        callingnumberauth = 3                   #integer from 0 to 9, must not equal to callingnumbersave, ipparamsave, ipparamauth and pppunitsave, optional, no default.
+        allowemptycallingnumber                 #boolean, optional, require 'callingnumberauth' option.
         kickprevious                            #boolean, optional.
         pppunitsave = 5                         #integer from 0 to 9, must not equal to ipparamauth and ipparamsave, optional, no default.
         pppdtimeout = 120                       #positive integer, optional, default is 60*5.
@@ -134,6 +137,10 @@ is empty, then check doesn't happen and authentication will
 succeed if user password is correct. If no ipparam was
 got from pppd, then authenticate will fail unless
 'allowemptyipparam' option is set.
+    'callingnumbersave', 'callingnumberauth' and
+'allowemptycallingnumber' are just like 'ipparam*' options,
+but dealing with calling (remote) number send by pppd. For
+PPPoE it's often contains client's MAC address.
     By default, purestg2 forbid new connections with the
 same login if user already connected. But if 'kickprevious'
 option is set, then in case of new connection attempt with
