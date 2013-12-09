@@ -58,4 +58,7 @@ int pureproto_getip(struct in_addr* userip, const char* login);
 //ask stg for interface unit
 int pureproto_getifunit(int* ifunit);
 
+//transfer calling number to Stargazer
+int pureproto_setcallnumber(const char* callnumber, const char* login);
+
 #endif

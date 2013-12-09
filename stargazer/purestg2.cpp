@@ -145,6 +145,9 @@ AUTH_PURESTG2::AUTH_PURESTG2()
     unitsave = -1;
     pppdtimeout = 60*5;
     checkinetable = true;
+    callnumsave = -1;
+    callnumauth = -1;
+    allowemptycallnum = false;
 
     pthread_mutex_init(&tobeunauth_mutex, NULL);
 }
@@ -221,6 +224,30 @@ int AUTH_PURESTG2::ParseSettings()
         {
             allowemptyipparam = true;
         }
+        else if (settings.moduleParams[i].param == "callingnumbersave")
+        {
+            char* endPtr;
+            callnumsave = strtol(settings.moduleParams[i].value[0].c_str(), &endPtr, 10);
+            if (*endPtr != '\0' || callnumsave < 0 || callnumsave > 9)
+            {
+                errorStr = "Parameter \"callingnumbersave\" must have an interger value from 0 to 9.";
+                return 1;
+            }
+        }
+        else if (settings.moduleParams[i].param == "callingnumberauth")
+        {
+            char* endPtr;
+            callnumauth = strtol(settings.moduleParams[i].value[0].c_str(), &endPtr, 10);
+            if (*endPtr != '\0' || callnumauth < 0 || callnumauth > 9)
+            {
+                errorStr = "Parameter \"callingnumberauth\" must have an interger value from 0 to 9.";
+                return 1;
+            }
+        }
+        else if (settings.moduleParams[i].param == "allowemptycallingnumber")
+        {
+            allowemptycallnum = true;
+        }
         else if (settings.moduleParams[i].param == "kickprevious")
         {
             kickprevious = true;
@@ -279,16 +306,32 @@ int AUTH_PURESTG2::ParseSettings()
         busyuserdata.insert(unitsave);
         busyuserdata_count++;
     }
+    if (callnumsave != -1)
+    {
+        busyuserdata.insert(callnumsave);
+        busyuserdata_count++;
+    }
+    if (callnumauth != -1)
+    {
+        busyuserdata.insert(callnumauth);
+        busyuserdata_count++;
+    }
 
     if (busyuserdata.size() != busyuserdata_count)
     {
-        errorStr = "Values for \"ipparamsave\", \"ipparamauth\" and \"pppunitsave\" must be different.";
+        errorStr = "Values for \"ipparamsave\", \"ipparamauth\", \"callingnumbersave\", \"callingnumberauth\" and \"pppunitsave\" must be different.";
         return 1;
     }
 
     if (allowemptyipparam && ipparamauth == -1)
     {
         errorStr = "Parameter \"ipparamauth\" must be set to use \"allowemptyipparam\" option.";
+        return 1;
+    }
+
+    if (allowemptycallnum && callnumauth == -1)
+    {
+        errorStr = "Parameter \"callnumauth\" must be set to use \"allowemptycallingnumber\" option.";
         return 1;
     }
 
@@ -605,6 +648,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
     case PUREPROTO_ASK_IP:
     case PUREPROTO_ASK_PING:
     case PUREPROTO_ASK_IPPARAM:
+    case PUREPROTO_ASK_CALLNUMBER:
         USER_PTR uptr;
 
         if (users->FindByName(string(ask.login), &uptr) == 0)
@@ -829,7 +873,47 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
                         {
                             //given ipparam was not found in userdata field, so reply with error
                             //and deny the authentication
-                            WriteServLog("purestg2: ipparam \"%s\" was't found in userdata%d field for user \"%s\".", ask.ipparam, ipparamauth, ask.login);
+                            WriteServLog("purestg2: ipparam \"%s\" wasn't found in userdata%d field for user \"%s\".", ask.ipparam, ipparamauth, ask.login);
+                            reply.result = PUREPROTO_REPLY_ERROR;
+                        }
+                    }
+                }
+            }
+        }
+        break;
+
+    case PUREPROTO_ASK_CALLNUMBER:
+        reply.result = PUREPROTO_REPLY_OK;
+        if (d) WriteServLog("purestg2: Got calling number: \"%s\"", ask.callnumber);
+        if (user)
+        {
+            string callnum(ask.callnumber);
+            if (callnumsave != -1)
+                getUserData(user, callnumsave) = callnum;
+
+            //check if calling number is allowed
+            if (callnumauth != -1)
+            {
+                if (callnum.empty())
+                {
+                    if (!allowemptycallnum)
+                    {
+                        WriteServLog("purestg2: Empty calling number is disallowed.");
+                        reply.result = PUREPROTO_REPLY_ERROR;
+                    }
+                }
+                else
+                {
+                    string userdata = getUserData(user, callnumauth);
+                    if (!userdata.empty())
+                    {
+                        vector<string> allowed;
+                        splitstring(userdata, ',', allowed);
+                        if (find(allowed.begin(), allowed.end(), callnum) == allowed.end())
+                        {
+                            //given calling number was not found in userdata field, so reply with error
+                            //and deny the authentication
+                            WriteServLog("purestg2: calling number \"%s\" wasn't found in userdata%d field for user \"%s\".", ask.callnumber, callnumauth, ask.login);
                             reply.result = PUREPROTO_REPLY_ERROR;
                         }
                     }

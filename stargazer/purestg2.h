@@ -160,6 +160,9 @@ private:
     bool                    kickprevious;
     int                     pppdtimeout;        //timeout to kill connection if no PINGs received
     bool                    checkinetable;      //if not set, purestg2 will authorize user even if it's not IsInetable()
+    int                     callnumsave;        //the userdata number to save calling number to
+    int                     callnumauth;        //the userdata number to check calling number against
+    bool                    allowemptycallnum;
 };
 //-----------------------------------------------------------------------------
 

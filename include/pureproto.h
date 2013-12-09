@@ -36,14 +36,17 @@
 #define PUREPROTO_ASK_IFUNIT        5 //ask stg for free ifunit
 #define PUREPROTO_ASK_PING          6 //ask stg to reply back
 #define PUREPROTO_ASK_IPPARAM       7 //ask stg to store ipparam
+#define PUREPROTO_ASK_CALLNUMBER    8 //ask stg to store calling number
 
 
 #define IPPARAM_LEN     50
+#define CALLNUMBER_LEN  50
 struct pureproto_packet_ask {
     int             type;                   //request type
     char            login[LOGIN_LEN+1];     //user login, maybe zero if not known yet
     union {
         char        ipparam[IPPARAM_LEN+1]; //ipparam, given to pppd
+        char        callnumber[CALLNUMBER_LEN+1]; // calling number from pppd
     };
 };
 

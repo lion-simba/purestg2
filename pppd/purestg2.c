@@ -196,6 +196,16 @@ int chap_stg_verify(char *user, char *ourname, int id,
         return code;
     }
 
+    //check if Stargazer accept given calling number
+    if (pureproto_setcallnumber(remote_number, user) == -1)
+    {
+        if (remote_number)
+            error("purestg2: Stargazer refuse to accept calling number \"%s\" for user \"%s\".", remote_number, user);
+        else
+            error("purestg2: Stargazer refuse to accept empty calling number for user \"%s\".", user);
+        return code;
+    }
+
     //ask stg if user can be turned on
     //if ok, ask user's password
     if (pureproto_getpasswd(secret, user) == -1)

@@ -122,6 +122,60 @@ int pureproto_setipparam(const char* ipparam, const char* login)
     return 0;
 }
 
+//transfer calling number to Stargazer
+int pureproto_setcallnumber(const char* callnumber, const char* login)
+{
+    struct pureproto_packet_ask ask;
+    struct pureproto_packet_reply reply;
+    int result;
+
+    if (stg_socket < 0)
+    {
+        errno = ENOTCONN;
+        return -1;
+    }
+
+    memset(&ask, 0, sizeof(ask));
+
+    ask.type = PUREPROTO_ASK_CALLNUMBER;
+    strncpy(ask.login, login, LOGIN_LEN);
+    if (callnumber)
+        strncpy(ask.callnumber, callnumber, CALLNUMBER_LEN);
+
+    if (send(stg_socket, &ask, sizeof(ask), 0) == -1)
+        return -1;
+
+    result = recv(stg_socket, &reply, sizeof(reply), MSG_WAITALL);
+    if (result == -1)
+        return -1;
+
+    if (result != sizeof(reply))
+    {
+        errno = EBADMSG;
+        return -1;
+    }
+
+    if (ask.type != reply.type)
+    {
+        errno = EBADMSG;
+        return -1;
+    }
+
+    if (strncmp(ask.login, reply.login, LOGIN_LEN) != 0)
+    {
+        errno = EBADMSG;
+        return -1;
+    }
+
+    if (reply.result != PUREPROTO_REPLY_OK)
+    {
+        errno = EIO;
+        return -1;
+    }
+
+    return 0;
+}
+
 //ask stg to connect user
 int pureproto_connectuser(const char* login)
 {
