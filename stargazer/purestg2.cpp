@@ -455,26 +455,29 @@ void* AUTH_PURESTG2::Run(void * me)
         changedsockets.clear();
         hupsockets.clear();
 
+        bool new_connections_pending = false;
         for (vector<struct pollfd>::iterator connection = auth->connections.begin(); connection != auth->connections.end(); ++connection)
         {
             if (connection->revents & POLLHUP)
                 hupsockets.push_back(connection->fd);
             else if (connection->revents & POLLIN)
-                changedsockets.push_back(connection->fd);
+            {
+                if (connection->fd == auth->listeningsocket)
+                {
+                    if (new_connections_pending)
+                        auth->WriteServLog("purestg2: BUG: listeningsocket appeared twice in same poll run!");
+                    else
+                        new_connections_pending = true;
+                }
+                else
+                    changedsockets.push_back(connection->fd);
+            }
         }
 
         for (vector<int>::iterator socket = changedsockets.begin(); socket != changedsockets.end(); ++socket)
         {
-            if (*socket == auth->listeningsocket)
-            {
-                if (auth->acceptClientConnection() == -1)
-                    auth->WriteServLog("purestg2: ERROR: can't accept client connection");
-            }
-            else
-            {
-                if (auth->handleClientConnection(*socket) == -1)
-                    auth->WriteServLog("purestg2: ERROR: can't handle client connection for socket %d", *socket);
-            }
+            if (auth->handleClientConnection(*socket) == -1)
+                auth->WriteServLog("purestg2: ERROR: can't handle client connection for socket %d", *socket);
         }
 
         for (vector<int>::iterator socket = hupsockets.begin(); socket != hupsockets.end(); ++socket)
@@ -487,6 +490,12 @@ void* AUTH_PURESTG2::Run(void * me)
                 if ((ret = auth->hupClientConnection(*socket)) < 0)
                     auth->WriteServLog("purestg2: ERROR: Can't hup client connection %d (ret=%d)", *socket, ret);
             }
+        }
+
+        if (new_connections_pending)
+        {
+            if (auth->acceptClientConnection() == -1)
+                auth->WriteServLog("purestg2: ERROR: can't accept client connection");
         }
     }
 
