@@ -115,7 +115,7 @@ using this plugin:
         callingnumberauth = 3                   #integer from 0 to 9, must not equal to callingnumbersave, ipparamsave, ipparamauth and pppunitsave, optional, no default.
         allowemptycallingnumber                 #boolean, optional, require 'callingnumberauth' option.
         kickprevious                            #boolean, optional.
-        pppunitsave = 5                         #integer from 0 to 9, must not equal to ipparamauth and ipparamsave, optional, no default.
+        pppunitsave = 5                         #integer from 0 to 9, must not equal to ipparamauth, ipparamsave, callingnumberauth and callingnumbersave, optional, no default.
         pppdtimeout = 120                       #positive integer, optional, default is 60*5.
         allownotinetable                        #boolean, optional.
         debug                                   #boolean, optional.
