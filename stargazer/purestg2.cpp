@@ -704,6 +704,24 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
                 if (finishClientConnection(oldsocket) < 0)
                     WriteServLog("purestg2: BUG: can't finishClientConnection for oldsocket=%d for user \"%s\"", oldsocket, ask.login);
 
+                //wait for stargazer disconnect user
+                int wait_count = 0;
+                while (user->GetConnected())
+                {
+                    if (wait_count > 50)
+                    {
+                        WriteServLog("purestg2: WARNING: Previous session was not disconnected after 5 seconds, continuing without waiting.");
+                        break;
+                    }
+                    if (user->GetAuthorized())
+                    {
+                        WriteServLog("purestg2: WARNING: Waiting for previous session disconnect is useless, because user is authorized by another authorizator.");
+                        break;
+                    }
+                    wait_count++;
+                    usleep(100000);
+                }
+
                 //TODO: wait for old pppd really finish somehow.
             }
             else
