@@ -68,8 +68,8 @@ Here is the sequence of those scripts called:
 5  (pppd)       /etc/ppp/ip-up
 
 -- Disconnection (by will of a client) --
-1  (pppd)       /etc/ppp/ip-down
-2* (purestg2)   'predownscript' (see below)
+1* (purestg2)   'predownscript' (see below)
+2  (pppd)       /etc/ppp/ip-down
 3  (Stargazer)  OnDisconnect
 4  (pppd)       /etc/ppp/auth-down
 
@@ -78,7 +78,7 @@ error.
 
 Scripts maked with '*' executes synchronously, i.e. they WAIT
 until script finished before proceed to the next stage. So pay
-attention that scripts 4 and 5 upon connection (3 and 4 upon 
+attention that scripts 4 and 5 upon connection (2, 3 and 4 upon 
 disconnection) may run simultaniously.
 
 ==== INSTALLATION ====

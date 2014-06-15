@@ -432,7 +432,7 @@ void plugin_init (void)
     allowed_address_hook = allowed_address;
 
     add_notifier(&ip_up_notifier, user_on, 0);
-    add_notifier(&link_down_notifier, user_off, 0);
+    add_notifier(&ip_down_notifier, user_off, 0);
 
     info("Stargazer (%s) auth plugin initialized.", PACKAGE_STRING);
     if (debug)
