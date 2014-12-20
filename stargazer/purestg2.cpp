@@ -15,7 +15,7 @@
  */
 
 /*
- *    Author: (c) 2009-2013 Alexey Osipov <public@alexey.osipov.name>
+ *    Author: (c) 2009-2014 Alexey Osipov <public@alexey.osipov.name>
  */
 
 #include <config.h>
