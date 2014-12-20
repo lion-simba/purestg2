@@ -177,7 +177,7 @@ int pureproto_setcallnumber(const char* callnumber, const char* login)
 }
 
 //ask stg to connect user
-int pureproto_connectuser(const char* login)
+int pureproto_connectuser(const char* login, struct in_addr* userip)
 {
     struct pureproto_packet_ask ask;
     struct pureproto_packet_reply reply;
@@ -193,6 +193,8 @@ int pureproto_connectuser(const char* login)
 
     ask.type = PUREPROTO_ASK_CONNECT;
     strncpy(ask.login, login, LOGIN_LEN);
+    if (userip)
+        ask.userip = *userip;
 
     if (send(stg_socket, &ask, sizeof(ask), 0) == -1)
         return -1;
@@ -402,6 +404,44 @@ int pureproto_getip(struct in_addr* userip, const char* login)
         return -1;
 
     *userip = reply.userip;
+
+    return 0;
+}
+
+//ask stg for user's ip
+int pureproto_checkip(struct in_addr* userip, const char* login)
+{
+    struct pureproto_packet_ask ask;
+    struct pureproto_packet_reply reply;
+    int result;
+
+    if (stg_socket < 0)
+        return -1;
+
+    memset(&ask, 0, sizeof(ask));
+
+    ask.type = PUREPROTO_ASK_ISIPALLOWED;
+    strncpy(ask.login, login, LOGIN_LEN);
+    ask.userip = *userip;
+
+    if (send(stg_socket, &ask, sizeof(ask), 0) == -1)
+        return -1;
+
+    result = recv(stg_socket, &reply, sizeof(reply), MSG_WAITALL);
+    if (result == -1)
+        return -1;
+
+    if (result != sizeof(reply))
+        return -1;
+
+    if (ask.type != reply.type)
+        return -1;
+
+    if (strncmp(ask.login, reply.login, LOGIN_LEN) != 0)
+        return -1;
+
+    if (reply.result != PUREPROTO_REPLY_OK)
+        return -1;
 
     return 0;
 }

@@ -37,6 +37,7 @@
 #define PUREPROTO_ASK_PING          6 //ask stg to reply back
 #define PUREPROTO_ASK_IPPARAM       7 //ask stg to store ipparam
 #define PUREPROTO_ASK_CALLNUMBER    8 //ask stg to store calling number
+#define PUREPROTO_ASK_ISIPALLOWED   9 //ask stg to check that given ip is allowed for user
 
 
 #define IPPARAM_LEN     50
@@ -47,6 +48,7 @@ struct pureproto_packet_ask {
     union {
         char        ipparam[IPPARAM_LEN+1]; //ipparam, given to pppd
         char        callnumber[CALLNUMBER_LEN+1]; // calling number from pppd
+        struct      in_addr userip;
     };
 };
 

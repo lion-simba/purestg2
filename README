@@ -36,9 +36,15 @@ details in CONFIGURATION section below.
 section below.
 
 3. If authentication was successfull:
-3.1 Ask Stargazer for user's IP address and set it as remote
-address of PPP connection.
-3.2 Ask Stargazer to connect user.
+3.1 Ask Stargazer for user's IP address.
+3.2a If Stargazer replies with non-zero IP, then this ip is set as
+remote address of PPP connection.
+3.2b If Stargazer replies with zero IP (0.0.0.0), then pppd choose
+remote address by itself. Zero IP corresponds to "*" in Stargazer
+user's properties.
+3.3 Ask Stargazer to check that user is allowed to use selected IP
+address. If not, connection is terminated.
+3.4 Ask Stargazer to connect the user.
 
 4. Send a PING packet to Stargazer each N seconds (configurable,
 60 by default) to check if Stargazer is still alive AND user is

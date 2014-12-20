@@ -72,6 +72,7 @@ static option_t options[] = {
 /* global variables */
 
 static char userlogin[LOGIN_LEN+1];
+static int userconnected = 0;
 pthread_t socketwatch;
 
 
@@ -138,21 +139,28 @@ void user_on(void* opaque, int xz)
     run_script(preupscript);
 
     //ask stargazer to enable this user
-    if (pureproto_connectuser(userlogin) == -1)
+    struct in_addr userip;
+    userip.s_addr = ipcp_hisoptions[0].hisaddr;
+    if (pureproto_connectuser(userlogin, &userip) == -1)
     {
-        error("purestg2: Can't connect user %s.", userlogin);
+        error("purestg2: Can't connect user %s with ip %I.", userlogin, userip.s_addr);
         die(1);
         return;
     }
+    
+    userconnected = 1;
 
     //start keepalive sequence
     timeout(&keep_alive, 0, keepalivetimeout, 0);
 
-    info("purestg2: User %s connected.", userlogin);
+    info("purestg2: User %s connected with ip %I.", userlogin, userip.s_addr);
 }
 
 void user_off(void* opaque, int xz)
 {
+    if (!userconnected)
+        return;
+
     //run and wait for pre-down script if it exists
     run_script(predownscript);
 
@@ -296,6 +304,14 @@ void choose_ip(u_int32_t *addrp)
         return;
     }
 
+    if (inpz.s_addr == 0)
+    {
+        info("purestg2: IP choosen: any.");
+        return;
+    }
+
+    info("purestg2: IP choosen: %I.", inpz.s_addr);
+
     //set that ip to addrp
     *addrp = inpz.s_addr;
 }
@@ -315,25 +331,18 @@ int pap_check_ok (void)
 int allowed_address (u_int32_t addr)
 {
     struct in_addr inpz;
-    info("purestg2: Allowed address.");
+    info("purestg2: Check that address %I is allowed...", addr);
 
-    //ask user's IP from stargazer
-    if (pureproto_getip(&inpz, userlogin) == -1)
-    {
-        error("purestg2: Can't get IP for user %s.", userlogin);
-        return;
-    }
-
-    //validate that IP with addr
-    if (addr == inpz.s_addr)
+    //ask stargazer to check the ip
+    inpz.s_addr = addr;
+    if (pureproto_checkip(&inpz, userlogin) == 0)
     {
         info("purestg2: Good address.");
         return 1;
     }
     else
     {
-        inpz.s_addr = addr;
-        error("purestg2: Bad address: %s", inet_ntoa(inpz));
+        error("purestg2: Stargazer disallowed address %I for user %s.", inpz.s_addr, userlogin);
         return 0;
     }
 }

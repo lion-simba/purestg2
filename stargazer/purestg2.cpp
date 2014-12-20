@@ -658,6 +658,7 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
     case PUREPROTO_ASK_PING:
     case PUREPROTO_ASK_IPPARAM:
     case PUREPROTO_ASK_CALLNUMBER:
+    case PUREPROTO_ASK_ISIPALLOWED:
         USER_PTR uptr;
 
         if (users->FindByName(string(ask.login), &uptr) == 0)
@@ -732,12 +733,19 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
             }
         }
 
-        //authorize user
-        if (!users->Authorize(user->GetLogin(), (user->GetProperty().ips.Get()[0]).ip, 0xffffffff, this))
+        //use ip from request if given
         {
-            WriteServLog("purestg2: ERROR: Can't authorize user %s.", ask.login);
-            reply.result = PUREPROTO_REPLY_ERROR;
-            break;
+            uint32_t ip = ask.userip.s_addr;
+            if (ip == 0)
+                ip = (user->GetProperty().ips.Get()[0]).ip; // else use first ip from user properties
+
+            //authorize user
+            if (!users->Authorize(user->GetLogin(), ip, 0xffffffff, this))
+            {
+                WriteServLog("purestg2: ERROR: Can't authorize user %s.", ask.login);
+                reply.result = PUREPROTO_REPLY_ERROR;
+                break;
+            }
         }
 
         usersockets[user->GetID()] = clientsocket;
@@ -773,6 +781,13 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
         if (!user)
         {
             reply.result = PUREPROTO_REPLY_ERROR;
+            break;
+        }
+        
+        if (!user->IsAuthorizedBy(this))
+        {
+            reply.result = PUREPROTO_REPLY_ERROR;
+            WriteServLog("purestg2: WARNING: User %s (socket=%d) was not connected, but we asked to disconnect this user.", ask.login, clientsocket);
             break;
         }
 
@@ -829,6 +844,24 @@ int AUTH_PURESTG2::handleClientConnection(int clientsocket)
         //get user ip
         reply.userip.s_addr = (user->GetProperty().ips.Get()[0]).ip;
 
+        reply.result = PUREPROTO_REPLY_OK;
+        break;
+
+    case PUREPROTO_ASK_ISIPALLOWED:
+        //check if we have user
+        if (!user)
+        {
+            reply.result = PUREPROTO_REPLY_ERROR;
+            break;
+        }
+        
+        if (!user->GetProperty().ips.Get().IsIPInIPS(ask.userip.s_addr))
+        {
+            reply.result = PUREPROTO_REPLY_ERROR;
+            WriteServLog("purestg2: User %s (socket=%d) is not allowed to use IP address %s.", ask.login, clientsocket, inet_ntoa(ask.userip));
+            break;
+        }
+        
         reply.result = PUREPROTO_REPLY_OK;
         break;
 

@@ -41,7 +41,8 @@ int pureproto_disconnect();
 int pureproto_setipparam(const char* ipparam, const char* login);
 
 //ask stg to connect user
-int pureproto_connectuser(const char* login);
+//userip is required only if pureproto_getip() return all-zero (0.0.0.0)
+int pureproto_connectuser(const char* login, struct in_addr* userip);
 
 //ask stg to disconnect user
 int pureproto_disconnectuser(const char* login);
@@ -60,5 +61,8 @@ int pureproto_getifunit(int* ifunit);
 
 //transfer calling number to Stargazer
 int pureproto_setcallnumber(const char* callnumber, const char* login);
+
+//ask stg to check that given userip is allowed for given user
+int pureproto_checkip(struct in_addr* userip, const char* login);
 
 #endif
