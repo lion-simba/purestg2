@@ -1,10 +1,17 @@
 New in 2.4:
+* Support for "*" user IP address in Stargazer. In this case
+  IP will be selected by pppd instead of Stargazer.
 * New Stargazer plugin configuration option: 'allownotinetable',
   'callingnumbersave', 'callingnumberauth',
   'allowemptycallingnumber'.
   See README for details.
 * Race condition fixed resulting in set ppp unit number lower
   than 'minppp' option value.
+* Fixed "can't find previous user socket" BUG, when pppd IPCP
+  reconfiguration led to disconnecting another user.
+* On kickprevious, purestg2 will now wait for previous session
+  really diconnected by Stargazer (OnDisconnect called) before
+  authorize new connection.
 
 New in 2.3:
 * Support and require Stargazer 2.408.
