@@ -1,3 +1,187 @@
+commit 5e3b294
+Author: Alexey Osipov <public@alexey.osipov.name>
+Date:   2014-12-21
+
+    Documentation updated.
+
+NEWS
+
+commit 6d84f02
+Author: Alexey Osipov <public@alexey.osipov.name>
+Date:   2014-12-20
+
+    New feature: able to use IP address supplied by pppd.
+
+README
+include/pureproto.h
+pppd/pureclient.c
+pppd/pureclient.h
+pppd/purestg2.c
+stargazer/purestg2.cpp
+
+commit ea3cc1e
+Author: Alexey Osipov <public@alexey.osipov.name>
+Date:   2014-12-20
+
+    Copyright years updated.
+
+include/pureproto.h
+pppd/pureclient.c
+pppd/pureclient.h
+pppd/purestg2.c
+stargazer/purestg2.cpp
+stargazer/purestg2.h
+
+commit bfff002
+Author: Alexey Osipov <public@alexey.osipov.name>
+Date:   2014-06-16
+
+    Probably fix "can't find previous user socket" BUG.
+    Note that disconnect script sequence changed!
+
+README
+pppd/purestg2.c
+
+commit aab6c66
+Author: Alexey Osipov <public@alexey.osipov.name>
+Date:   2014-02-17
+
+    If kickprevious enabled, purestg2 will now wait for previous session really disconnected by stargazer (OnDisconnect script will be executed) before authenticate new connection.
+
+stargazer/purestg2.cpp
+
+commit c22eaa8
+Author: Alexey Osipov <public@alexey.osipov.name>
+Date:   2014-01-22
+
+    Accept new connections after all existent have been processed. Fixes race condition when new connection shares same socket id with existent HUPed connection.
+
+stargazer/purestg2.cpp
+
+commit 0f4e2ba
+Author: Alexey Osipov <public@alexey.osipov.name>
+Date:   2014-01-25
+
+    README fixed
+
+README
+
+commit 4772ab8
+Author: Alexey Osipov <public@alexey.osipov.name>
+Date:   2013-12-09
+
+    Documentation updated.
+
+NEWS
+README
+
+commit 5bab5a3
+Author: Alexey Osipov <public@alexey.osipov.name>
+Date:   2013-12-09
+
+    Support for saving and authenticating against pppd calling number value.
+
+include/pureproto.h
+pppd/pureclient.c
+pppd/pureclient.h
+pppd/purestg2.c
+stargazer/purestg2.cpp
+stargazer/purestg2.h
+
+commit e98955a
+Author: Alexey Osipov <public@alexey.osipov.name>
+Date:   2013-12-08
+
+    autoreconf
+
+configure
+
+commit b9d471d
+Author: Alexey Osipov <public@alexey.osipov.name>
+Date:   2013-12-08
+
+    Race conditions fixed: ifunit number was counted as free before it had been actually freed.
+
+pppd/purestg2.c
+
+commit 6ae7adc
+Author: Alexey Osipov <public@alexey.osipov.name>
+Date:   2013-12-08
+
+    Author e-mail and copyright years updated.
+
+AUTHORS
+configure.ac
+include/pureproto.h
+pppd/pureclient.c
+pppd/pureclient.h
+pppd/purestg2.c
+stargazer/purestg2.cpp
+stargazer/purestg2.h
+
+commit 28be71f
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2012-11-11
+
+    Stg headers checking order during configure stage changed so that headers used in next headers checked first.
+
+configure
+configure.ac
+
+commit 4ecbe06
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2012-11-08
+
+    New Stargazer plugin configuration option added: 'allownotinetable'.
+
+NEWS
+README
+stargazer/purestg2.cpp
+stargazer/purestg2.h
+
+commit 754ce48
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2012-11-07
+
+    Trailing spaces removed
+
+pppd/pureclient.c
+pppd/purestg2.c
+stargazer/purestg2.cpp
+stargazer/purestg2.h
+
+commit b7b3c43
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2012-10-08
+
+    Version bump.
+    Update autoconf to 2.68.
+    Update automake to 1.11.3.
+    Update libtool to 2.4.2.
+
+Makefile.in
+aclocal.m4
+configure
+configure.ac
+ltmain.sh
+m4/libtool.m4
+m4/ltoptions.m4
+m4/ltversion.m4
+m4/lt~obsolete.m4
+pppd/Makefile.in
+stargazer/Makefile.in
+
+commit 3643341
+Author: Alexey Osipov <simba@lerlan.ru>
+Date:   2012-02-19
+
+    Release 2.3
+
+ChangeLog
+NEWS
+configure
+configure.ac
+
 commit 5c02ec6
 Author: Alexey Osipov <simba@lerlan.ru>
 Date:   2012-02-19
